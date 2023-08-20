@@ -1,18 +1,20 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-pub mod database;
+pub mod models {
+    pub mod database;
+    pub mod feeds;
+}
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+pub mod commands {
+    pub mod feeds;
 }
 
 fn main() {
-    let _ = database::init();
+    let _ = models::database::migrate();
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![commands::feeds::create_feed])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

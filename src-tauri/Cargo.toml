@@ -20,6 +20,8 @@ chrono = { version = "0.4", default-features = false, features = ["clock"] }
 rusqlite = "0.28"
 sea-query = "0"
 sea-query-rusqlite = { version = "0", features = ["with-chrono"] }
+rss = "2.0"
+reqwest = "0.11"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

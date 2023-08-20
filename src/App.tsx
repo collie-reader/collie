@@ -4,6 +4,7 @@ import "./App.css";
 
 import Settings from "./routes/Settings";
 import List from "./routes/List";
+import Feeds from "./routes/Feeds";
 
 export enum Page {
   UNREAD = "Unread",
@@ -37,7 +38,7 @@ function App() {
           <List type={Page.ARCHIVED} />
         </Match>
         <Match when={route() == Page.FEEDS}>
-          <List type={Page.FEEDS} />
+          <Feeds />
         </Match>
         <Match when={route() == Page.SETTINGS}>
           <Settings />

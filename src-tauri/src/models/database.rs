@@ -1,5 +1,7 @@
 use rusqlite::{Connection, Result};
-use sea_query::{ColumnDef, Expr, ForeignKey, ForeignKeyAction, Iden, SqliteQueryBuilder, Table};
+use sea_query::{
+    ColumnDef, Expr, ForeignKey, ForeignKeyAction, Iden, Index, SqliteQueryBuilder, Table,
+};
 
 #[derive(Iden)]
 pub enum Feeds {
@@ -14,6 +16,7 @@ pub enum Feeds {
 pub enum Items {
     Table,
     Id,
+    Fingerprint,
     Author,
     Title,
     Description,
@@ -23,8 +26,12 @@ pub enum Items {
     Feed,
 }
 
-pub fn init() -> Result<()> {
-    let conn = Connection::open("collie.db")?;
+pub fn open_connection() -> Result<Connection> {
+    Connection::open("collie.db")
+}
+
+pub fn migrate() -> Result<()> {
+    let db = open_connection()?;
 
     let create_table_feeds = Table::create()
         .table(Feeds::Table)
@@ -39,6 +46,13 @@ pub fn init() -> Result<()> {
         .col(ColumnDef::new(Feeds::Title).text().not_null())
         .col(ColumnDef::new(Feeds::Link).text().not_null())
         .col(ColumnDef::new(Feeds::CheckedAt).date_time().not_null())
+        .index(
+            Index::create()
+                .unique()
+                .name("uk_feeds_title_link")
+                .col(Feeds::Title)
+                .col(Feeds::Link),
+        )
         .build(SqliteQueryBuilder);
 
     let create_table_items = Table::create()
@@ -50,6 +64,12 @@ pub fn init() -> Result<()> {
                 .not_null()
                 .auto_increment()
                 .primary_key(),
+        )
+        .col(
+            ColumnDef::new(Items::Fingerprint)
+                .text()
+                .not_null()
+                .unique_key(),
         )
         .col(ColumnDef::new(Items::Author).text())
         .col(ColumnDef::new(Items::Title).text().not_null())
@@ -74,7 +94,7 @@ pub fn init() -> Result<()> {
         )
         .build(SqliteQueryBuilder);
 
-    conn.execute_batch(&[create_table_feeds, create_table_items].join(";"))?;
+    db.execute_batch(&[create_table_feeds, create_table_items].join(";"))?;
 
     Ok(())
 }
