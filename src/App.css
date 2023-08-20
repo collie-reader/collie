@@ -1,7 +1,9 @@
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
+.navigation > h1 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 .7rem 0 0;
 }
 
-.logo.solid:hover {
-  filter: drop-shadow(0 0 2em #2f5d90);
+.navigation > * {
+  margin-right: .7rem;
 }
