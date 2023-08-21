@@ -1,4 +1,4 @@
-use chrono::{NaiveDateTime, Utc};
+use chrono::{DateTime, FixedOffset, Utc};
 use rusqlite::{Result, Row};
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
@@ -8,10 +8,10 @@ use super::database::{open_connection, Feeds};
 
 #[derive(Serialize, Debug)]
 pub struct Feed {
-    id: i32,
-    title: String,
-    link: String,
-    checked_at: NaiveDateTime,
+    pub id: i32,
+    pub title: String,
+    pub link: String,
+    pub checked_at: DateTime<FixedOffset>,
 }
 
 impl From<&Row<'_>> for Feed {
@@ -36,17 +36,14 @@ pub struct FeedToUpdate {
     pub id: i32,
     pub title: Option<String>,
     pub link: Option<String>,
+    pub checked_at: Option<DateTime<FixedOffset>>,
 }
 
 pub fn create(arg: FeedToCreate) -> Result<usize> {
     let db = open_connection()?;
 
     let cols = [Feeds::Title, Feeds::Link, Feeds::CheckedAt];
-    let vals = [
-        arg.title.into(),
-        arg.link.into(),
-        Utc::now().naive_utc().into(),
-    ];
+    let vals = [arg.title.into(), arg.link.into(), Utc::now().into()];
     let (sql, values) = Query::insert()
         .into_table(Feeds::Table)
         .columns(cols)
@@ -71,15 +68,18 @@ pub fn read_all() -> Result<Vec<Feed>> {
     Ok(rows.map(|x| x.unwrap()).collect::<Vec<Feed>>())
 }
 
-pub fn update(arg: FeedToUpdate) -> Result<usize> {
+pub fn update(arg: &FeedToUpdate) -> Result<usize> {
     let db = open_connection()?;
 
     let mut vals = vec![];
-    if let Some(title) = arg.title {
+    if let Some(title) = &arg.title {
         vals.push((Feeds::Title, title.into()));
     }
-    if let Some(link) = arg.link {
+    if let Some(link) = &arg.link {
         vals.push((Feeds::Link, link.into()));
+    }
+    if let Some(checked_at) = arg.checked_at {
+        vals.push((Feeds::CheckedAt, checked_at.into()));
     }
 
     let (sql, values) = Query::update()

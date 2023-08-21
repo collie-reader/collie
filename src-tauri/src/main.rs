@@ -4,14 +4,20 @@
 pub mod models {
     pub mod database;
     pub mod feeds;
+    pub mod items;
 }
 
 pub mod commands {
     pub mod feeds;
+    pub mod items;
 }
+
+pub mod rss;
+pub mod worker;
 
 fn main() {
     let _ = models::database::migrate();
+    worker::start();
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
