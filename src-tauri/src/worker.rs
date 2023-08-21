@@ -2,6 +2,7 @@ use std::thread;
 use std::time;
 
 use chrono::{DateTime, Duration, Utc};
+use tauri::api::notification::Notification;
 
 use crate::{
     models::{
@@ -11,26 +12,29 @@ use crate::{
     rss::fecth_feed_channel,
 };
 
-pub fn start() {
-    thread::spawn(|| loop {
+pub fn start(app_id: String) {
+    thread::spawn(move || loop {
         let pairs = get_links_to_check();
 
+        let mut inserted = vec![];
         for (feed, link) in pairs {
             if let Ok(channel) = fecth_feed_channel(&link) {
-                insert_unread_items(feed, channel.items());
+                inserted.extend(insert_unread_items(feed, channel.items()));
             };
         }
 
-        thread::sleep(time::Duration::from_secs(300));
+        notify(&app_id, &inserted);
+
+        thread::sleep(time::Duration::from_secs(120));
     });
 }
 
-pub fn get_links_to_check() -> Vec<(i32, String)> {
+fn get_links_to_check() -> Vec<(i32, String)> {
     if let Ok(feeds) = feeds::read_all() {
         let current = Utc::now().fixed_offset();
         let filtered = feeds
             .iter()
-            .filter(|x| x.checked_at + Duration::seconds(300) <= current);
+            .filter(|x| x.checked_at + Duration::seconds(120) <= current);
 
         filtered
             .map(|x| {
@@ -48,7 +52,7 @@ pub fn get_links_to_check() -> Vec<(i32, String)> {
     }
 }
 
-pub fn insert_unread_items(feed: i32, items: &[rss::Item]) {
+fn insert_unread_items(feed: i32, items: &[rss::Item]) -> Vec<ItemToCreate> {
     let current = Utc::now().fixed_offset();
 
     let args = items.iter().map(|x| ItemToCreate {
@@ -65,7 +69,28 @@ pub fn insert_unread_items(feed: i32, items: &[rss::Item]) {
         feed,
     });
 
+    let mut inserted = vec![];
     for arg in args {
-        let _ = items::create(arg);
+        if items::create(&arg).is_ok() {
+            inserted.push(arg);
+        }
+    }
+
+    inserted
+}
+
+fn notify(app_id: &str, args: &[ItemToCreate]) {
+    if args.len() <= 3 {
+        for arg in args {
+            let _ = Notification::new(app_id)
+                .title(&arg.title)
+                .body(&arg.description)
+                .show();
+        }
+    } else {
+        let _ = Notification::new(app_id)
+            .title("New items arrived")
+            .body(format!("There are {} items to read", args.len()))
+            .show();
     }
 }

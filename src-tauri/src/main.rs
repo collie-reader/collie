@@ -17,15 +17,18 @@ pub mod worker;
 
 fn main() {
     let _ = models::database::migrate();
-    worker::start();
 
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             commands::feeds::create_feed,
             commands::feeds::read_all_feeds,
             commands::feeds::update_feed,
             commands::feeds::delete_feed,
         ])
-        .run(tauri::generate_context!())
+        .build(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");
+
+    worker::start(app.config().tauri.bundle.identifier.clone());
+
+    app.run(|_, _| {});
 }

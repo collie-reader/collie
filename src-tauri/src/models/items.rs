@@ -103,7 +103,7 @@ pub struct ItemReadOption {
     pub offset: Option<u64>,
 }
 
-pub fn create(arg: ItemToCreate) -> Result<usize> {
+pub fn create(arg: &ItemToCreate) -> Result<usize> {
     let db = open_connection()?;
 
     let cols = [
@@ -119,10 +119,10 @@ pub fn create(arg: ItemToCreate) -> Result<usize> {
 
     let vals = [
         arg.fingerprint().into(),
-        arg.author.into(),
-        arg.title.into(),
-        arg.description.into(),
-        arg.link.into(),
+        arg.author.clone().into(),
+        arg.title.clone().into(),
+        arg.description.clone().into(),
+        arg.link.clone().into(),
         arg.status.to_string().into(),
         arg.published_at.into(),
         arg.feed.into(),
