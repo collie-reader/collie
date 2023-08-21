@@ -1,11 +1,12 @@
 use chrono::{NaiveDateTime, Utc};
 use rusqlite::{Result, Row};
-use sea_query::{Query, SqliteQueryBuilder};
+use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::database::{open_connection, Feeds};
 
+#[derive(Serialize, Debug)]
 pub struct Feed {
     id: i32,
     title: String,
@@ -37,20 +38,66 @@ pub struct FeedToUpdate {
     pub link: Option<String>,
 }
 
-pub fn create(args: FeedToCreate) -> Result<usize> {
+pub fn create(arg: FeedToCreate) -> Result<usize> {
     let db = open_connection()?;
 
+    let cols = [Feeds::Title, Feeds::Link, Feeds::CheckedAt];
+    let vals = [
+        arg.title.into(),
+        arg.link.into(),
+        Utc::now().naive_utc().into(),
+    ];
     let (sql, values) = Query::insert()
         .into_table(Feeds::Table)
-        .columns([Feeds::Title, Feeds::Link, Feeds::CheckedAt])
-        .values_panic([args.title.into(), args.link.into(), Utc::now().into()])
+        .columns(cols)
+        .values_panic(vals)
         .build_rusqlite(SqliteQueryBuilder);
 
     db.execute(sql.as_str(), &*values.as_params())
 }
 
-pub fn read_all() {}
+pub fn read_all() -> Result<Vec<Feed>> {
+    let db = open_connection()?;
 
-pub fn update() {}
+    let cols = [Feeds::Id, Feeds::Title, Feeds::Link, Feeds::CheckedAt];
+    let (sql, values) = Query::select()
+        .columns(cols)
+        .from(Feeds::Table)
+        .build_rusqlite(SqliteQueryBuilder);
 
-pub fn delete() {}
+    let mut stmt = db.prepare(sql.as_str())?;
+    let rows = stmt.query_map(&*values.as_params(), |x| Ok(Feed::from(x)))?;
+
+    Ok(rows.map(|x| x.unwrap()).collect::<Vec<Feed>>())
+}
+
+pub fn update(arg: FeedToUpdate) -> Result<usize> {
+    let db = open_connection()?;
+
+    let mut vals = vec![];
+    if let Some(title) = arg.title {
+        vals.push((Feeds::Title, title.into()));
+    }
+    if let Some(link) = arg.link {
+        vals.push((Feeds::Link, link.into()));
+    }
+
+    let (sql, values) = Query::update()
+        .table(Feeds::Table)
+        .values(vals)
+        .and_where(Expr::col(Feeds::Id).eq(arg.id))
+        .build_rusqlite(SqliteQueryBuilder);
+
+    db.execute(sql.as_str(), &*values.as_params())
+}
+
+pub fn delete(id: i32) -> Result<usize> {
+    let db = open_connection()?;
+
+    let (sql, values) = Query::delete()
+        .from_table(Feeds::Table)
+        .and_where(Expr::col(Feeds::Id).eq(id))
+        .build_rusqlite(SqliteQueryBuilder);
+
+    db.execute(sql.as_str(), &*values.as_params())
+}

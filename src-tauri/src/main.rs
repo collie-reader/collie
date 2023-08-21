@@ -14,7 +14,12 @@ fn main() {
     let _ = models::database::migrate();
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![commands::feeds::create_feed])
+        .invoke_handler(tauri::generate_handler![
+            commands::feeds::create_feed,
+            commands::feeds::read_all_feeds,
+            commands::feeds::update_feed,
+            commands::feeds::delete_feed,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

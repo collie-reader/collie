@@ -16,7 +16,7 @@ tauri-build = { version = "1.4", features = [] }
 tauri = { version = "1.4", features = ["shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-chrono = { version = "0.4", default-features = false, features = ["clock"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 rusqlite = "0.28"
 sea-query = "0"
 sea-query-rusqlite = { version = "0", features = ["with-chrono"] }
