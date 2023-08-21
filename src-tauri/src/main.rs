@@ -32,5 +32,15 @@ fn main() {
 
     worker::start(app.config().tauri.bundle.identifier.clone());
 
-    app.run(|_, _| {});
+    app.run(move |handle, event| {
+        if let tauri::RunEvent::WindowEvent {
+            label: _,
+            event: tauri::WindowEvent::CloseRequested { api, .. },
+            ..
+        } = event
+        {
+            let _ = handle.hide();
+            api.prevent_close();
+        }
+    });
 }
