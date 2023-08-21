@@ -83,7 +83,7 @@ pub fn migrate() -> Result<()> {
                 .default("unread"),
         )
         .col(ColumnDef::new(Items::PublishedAt).date_time().not_null())
-        .col(ColumnDef::new(Items::Feed).text().not_null())
+        .col(ColumnDef::new(Items::Feed).integer().not_null())
         .foreign_key(
             ForeignKey::create()
                 .name("fk_items_feeds")

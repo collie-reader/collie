@@ -3,7 +3,7 @@ use crate::models::items::{self, Item, ItemReadOption, ItemToUpdate};
 #[tauri::command]
 pub fn read_all_items(opt: ItemReadOption) -> Result<Vec<Item>, String> {
     match items::read_all(opt) {
-        Ok(feeds) => Ok(feeds),
+        Ok(items) => Ok(items),
         Err(err) => Err(err.to_string()),
     }
 }

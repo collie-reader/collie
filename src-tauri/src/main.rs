@@ -24,6 +24,8 @@ fn main() {
             commands::feeds::read_all_feeds,
             commands::feeds::update_feed,
             commands::feeds::delete_feed,
+            commands::items::read_all_items,
+            commands::items::update_item,
         ])
         .build(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");

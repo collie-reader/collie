@@ -99,6 +99,7 @@ pub struct ItemToUpdate {
 #[derive(Deserialize)]
 pub struct ItemReadOption {
     pub feed: Option<i32>,
+    pub status: Option<ItemStatus>,
     pub limit: Option<u64>,
     pub offset: Option<u64>,
 }
@@ -141,6 +142,7 @@ pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
     let db = open_connection()?;
 
     let cols = [
+        Items::Id,
         Items::Fingerprint,
         Items::Author,
         Items::Title,
@@ -157,12 +159,20 @@ pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
         query.and_where(Expr::col(Items::Feed).eq(feed));
     }
 
+    if let Some(status) = opt.status {
+        query.and_where(Expr::col(Items::Status).eq(status.to_string()));
+    }
+
     if let Some(limit) = opt.limit {
         query.limit(limit);
     }
 
     if let Some(offset) = opt.offset {
-        query.offset(offset);
+        query.offset(if let Some(limit) = opt.limit {
+            offset * limit
+        } else {
+            offset
+        });
     }
 
     let (sql, values) = query.build_rusqlite(SqliteQueryBuilder);
@@ -179,6 +189,7 @@ pub fn update(arg: ItemToUpdate) -> Result<usize> {
     if let Some(status) = arg.status {
         vals.push((Items::Status, status.to_string().into()));
     }
+    println!("vals: ");
 
     let (sql, values) = Query::update()
         .table(Items::Table)
