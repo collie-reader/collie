@@ -1,12 +1,12 @@
 use crate::{
     models::feeds::{self, Feed, FeedToCreate, FeedToUpdate},
-    rss::fecth_feed_channel,
+    syndication::fecth_feed_title,
 };
 
 #[tauri::command]
 pub fn create_feed(arg: FeedToCreate) -> Result<String, String> {
-    let title = match fecth_feed_channel(&arg.link) {
-        Ok(channel) => channel.title,
+    let title = match fecth_feed_title(&arg.link) {
+        Ok(title) => title,
         Err(err) => return Err(err.to_string()),
     };
 

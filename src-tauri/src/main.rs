@@ -12,7 +12,7 @@ pub mod commands {
     pub mod items;
 }
 
-pub mod rss;
+pub mod syndication;
 pub mod worker;
 
 fn main() {

@@ -3,16 +3,17 @@ use std::time;
 use tauri::AppHandle;
 use tauri::Manager;
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{Duration, Utc};
 use tauri::api::notification::Notification;
 
 use crate::models::feeds::FeedStatus;
+use crate::syndication::RawItem;
 use crate::{
     models::{
         feeds::{self, FeedToUpdate},
         items::{self, ItemStatus, ItemToCreate},
     },
-    rss::fecth_feed_channel,
+    syndication::fecth_feed_items,
 };
 
 pub fn start(app_id: String, handle: AppHandle) {
@@ -21,8 +22,8 @@ pub fn start(app_id: String, handle: AppHandle) {
 
         let mut inserted = vec![];
         for (feed, link) in pairs {
-            if let Ok(channel) = fecth_feed_channel(&link) {
-                inserted.extend(insert_unread_items(feed, channel.items()));
+            if let Ok(items) = fecth_feed_items(&link) {
+                inserted.extend(insert_new_items(feed, &items));
             };
         }
 
@@ -60,20 +61,21 @@ fn get_links_to_check() -> Vec<(i32, String)> {
     }
 }
 
-fn insert_unread_items(feed: i32, items: &[rss::Item]) -> Vec<ItemToCreate> {
+fn insert_new_items(feed: i32, items: &[RawItem]) -> Vec<ItemToCreate> {
     let current = Utc::now().fixed_offset();
 
     let args = items.iter().map(|x| ItemToCreate {
-        author: x
-            .author()
-            .map(|x| x.trim().to_string())
-            .or(x.dublin_core_ext().map(|x| x.creators().join(", "))),
-        title: x.title().unwrap_or("Untitled").trim().to_string(),
-        link: x.link().unwrap_or("#").trim().to_string(),
-        description: x.description().unwrap_or("").trim().to_string(),
+        author: x.author.clone().map(|x| x.trim().to_string()),
+        title: x.title.trim().to_string(),
+        link: x.link.clone().unwrap_or("#".to_string()).trim().to_string(),
+        description: x
+            .content
+            .clone()
+            .unwrap_or("".to_string())
+            .trim()
+            .to_string(),
         status: ItemStatus::Unread,
-        published_at: DateTime::parse_from_rfc2822(x.pub_date().unwrap_or(&current.to_rfc2822()))
-            .unwrap_or(Utc::now().fixed_offset()),
+        published_at: x.published_at.unwrap_or(current),
         feed,
     });
 
