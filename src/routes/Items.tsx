@@ -18,27 +18,28 @@ export enum ItemType {
   SAVED = "Saved",
 }
 
-function typeToStatus(type: ItemType) {
-  switch (type) {
-    case ItemType.INBOX:
-      return null;
-    case ItemType.UNREAD:
-      return api.ItemStatus.UNREAD;
-    case ItemType.SAVED:
-      return api.ItemStatus.SAVED;
-  }
-}
-
 interface Props {
   type: ItemType;
 }
 
 function Items(props: Props) {
   const LIMIT = 50;
-  const givenStatus = typeToStatus(props.type);
+
+  function option() {
+    let opt = { offset: offset(), limit: LIMIT };
+
+    switch (props.type) {
+      case ItemType.INBOX:
+        return opt;
+      case ItemType.SAVED:
+        return { ...opt, is_saved: true };
+      case ItemType.UNREAD:
+        return { ...opt, status: api.ItemStatus.UNREAD };
+    }
+  }
 
   const [offset, setOffset] = createSignal(0);
-  const [opt, setOpt] = createSignal<api.ItemReadOption>({ status: givenStatus, offset: offset(), limit: LIMIT });
+  const [opt, setOpt] = createSignal<api.ItemReadOption>(option());
 
   const [items, setItems] = createSignal<api.Item[]>([]);
   const [selectedItem, setSelectedItem] = createSignal<api.Item | null>(null);
@@ -61,8 +62,18 @@ function Items(props: Props) {
     setItems(await api.readItems({ ...opt(), offset: offset() }));
   };
 
+  const toggleSave = async (item: api.Item) => {
+    if (item.is_saved) {
+      api.unsave(item.id)
+    } else{
+      api.save(item.id)
+    }
+
+    setItems(await api.readItems({ ...opt(), offset: offset() }));
+  }
+
   const markAs = async (id: number, status: api.ItemStatus) => {
-    if (status !== givenStatus) {
+    if (status !== opt().status) {
       await api.markAs(id, status);
       setItems(await api.readItems(opt()));
     }
@@ -89,7 +100,11 @@ function Items(props: Props) {
                 <small class="row">
                   <span class="sep">by</span> {item.author}
                   <span class="sep"> at</span> <span title={dayjs(item.published_at).tz(dayjs.tz.guess()).format()}>{dayjs(item.published_at).fromNow()}</span>
-                  <span class="sep"> | </span><a onClick={() => markAs(item.id, api.ItemStatus.SAVED)}>Save</a>
+                  <span class="sep"> | </span>
+                  <Switch>
+                    <Match when={!item.is_saved}><a onClick={() => toggleSave(item)}>Save</a></Match>
+                    <Match when={item.is_saved}><a onClick={() => toggleSave(item)}>Unsave</a></Match>
+                  </Switch>
                   <span class="sep"> | </span><a onClick={() => {
                     setSelectedItem(item);
                     markAs(item.id, api.ItemStatus.READ)

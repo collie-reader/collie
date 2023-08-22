@@ -23,6 +23,7 @@ pub enum Items {
     Description,
     Link,
     Status,
+    IsSaved,
     PublishedAt,
     Feed,
 }
@@ -86,9 +87,16 @@ pub fn migrate() -> Result<()> {
         .col(
             ColumnDef::new(Items::Status)
                 .text()
-                .check(Expr::col(Items::Status).is_in(["unread", "read", "saved"]))
+                .check(Expr::col(Items::Status).is_in(["unread", "read"]))
                 .not_null()
                 .default("unread"),
+        )
+        .col(
+            ColumnDef::new(Items::IsSaved)
+                .integer()
+                .check(Expr::col(Items::IsSaved).is_in([0, 1]))
+                .not_null()
+                .default(0),
         )
         .col(ColumnDef::new(Items::PublishedAt).date_time().not_null())
         .col(ColumnDef::new(Items::Feed).integer().not_null())

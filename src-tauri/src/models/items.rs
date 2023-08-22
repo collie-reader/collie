@@ -14,7 +14,6 @@ use super::database::{open_connection, Items};
 pub enum ItemStatus {
     Unread,
     Read,
-    Saved,
 }
 
 impl Display for ItemStatus {
@@ -22,7 +21,6 @@ impl Display for ItemStatus {
         match self {
             ItemStatus::Unread => write!(f, "unread"),
             ItemStatus::Read => write!(f, "read"),
-            ItemStatus::Saved => write!(f, "saved"),
         }
     }
 }
@@ -34,7 +32,6 @@ impl FromStr for ItemStatus {
         match x {
             "unread" => Ok(ItemStatus::Unread),
             "read" => Ok(ItemStatus::Read),
-            "saved" => Ok(ItemStatus::Saved),
             _ => Err(()),
         }
     }
@@ -49,6 +46,7 @@ pub struct Item {
     description: String,
     link: String,
     status: ItemStatus,
+    is_saved: bool,
     published_at: DateTime<FixedOffset>,
     feed: i32,
 }
@@ -63,6 +61,7 @@ impl From<&Row<'_>> for Item {
             description: row.get_unwrap("description"),
             link: row.get_unwrap("link"),
             status: ItemStatus::from_str(&row.get_unwrap::<&str, String>("status")).unwrap(),
+            is_saved: row.get_unwrap("is_saved"),
             published_at: row.get_unwrap("published_at"),
             feed: row.get_unwrap("feed"),
         }
@@ -94,12 +93,14 @@ impl ItemToCreate {
 pub struct ItemToUpdate {
     id: i32,
     status: Option<ItemStatus>,
+    is_saved: Option<bool>,
 }
 
 #[derive(Deserialize)]
 pub struct ItemReadOption {
     pub feed: Option<i32>,
     pub status: Option<ItemStatus>,
+    pub is_saved: Option<bool>,
     pub limit: Option<u64>,
     pub offset: Option<u64>,
 }
@@ -149,6 +150,7 @@ pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
         Items::Description,
         Items::Link,
         Items::Status,
+        Items::IsSaved,
         Items::PublishedAt,
         Items::Feed,
     ];
@@ -165,6 +167,10 @@ pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
 
     if let Some(status) = opt.status {
         query.and_where(Expr::col(Items::Status).eq(status.to_string()));
+    }
+
+    if let Some(is_saved) = opt.is_saved {
+        query.and_where(Expr::col(Items::IsSaved).eq(is_saved));
     }
 
     if let Some(limit) = opt.limit {
@@ -192,6 +198,9 @@ pub fn update(arg: ItemToUpdate) -> Result<usize> {
     let mut vals = vec![];
     if let Some(status) = arg.status {
         vals.push((Items::Status, status.to_string().into()));
+    }
+    if let Some(is_saved) = arg.is_saved {
+        vals.push((Items::IsSaved, is_saved.into()));
     }
     println!("vals: ");
 
