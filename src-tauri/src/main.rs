@@ -30,7 +30,7 @@ fn main() {
         .build(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");
 
-    worker::start(app.config().tauri.bundle.identifier.clone());
+    worker::start(app.config().tauri.bundle.identifier.clone(), app.handle());
 
     app.run(move |handle, event| {
         if let tauri::RunEvent::WindowEvent {

@@ -1,3 +1,4 @@
+import { listen } from '@tauri-apps/api/event';
 import { createSignal, For, Match, onMount, Show, Switch } from "solid-js";
 
 import dayjs from 'dayjs';
@@ -64,6 +65,10 @@ function Items(props: Props) {
   };
 
   onMount(async () => {
+    listen('feed_updated', async (_) => {
+      setItems(await api.readItems(opt()));
+    });
+
     setItems(await api.readItems(opt()));
   });
 

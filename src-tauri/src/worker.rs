@@ -1,5 +1,7 @@
 use std::thread;
 use std::time;
+use tauri::AppHandle;
+use tauri::Manager;
 
 use chrono::{DateTime, Duration, Utc};
 use tauri::api::notification::Notification;
@@ -12,7 +14,7 @@ use crate::{
     rss::fecth_feed_channel,
 };
 
-pub fn start(app_id: String) {
+pub fn start(app_id: String, handle: AppHandle) {
     thread::spawn(move || loop {
         let pairs = get_links_to_check();
 
@@ -23,7 +25,10 @@ pub fn start(app_id: String) {
             };
         }
 
-        notify(&app_id, &inserted);
+        if inserted.len() > 0 {
+            notify(&app_id, &inserted);
+            let _ = handle.emit_all("feed_updated", ());
+        }
 
         thread::sleep(time::Duration::from_secs(120));
     });
