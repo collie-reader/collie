@@ -183,7 +183,7 @@ pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
     }
 
     if let Some(status) = opt.status {
-        query.and_where(Expr::col(Items::Status).eq(status.to_string()));
+        query.and_where(Expr::col((Items::Table, Items::Status)).eq(status.to_string()));
     }
 
     if let Some(is_saved) = opt.is_saved {

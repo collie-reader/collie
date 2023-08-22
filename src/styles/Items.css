@@ -15,14 +15,7 @@ div.item-list > ul > li {
 div.item-list > ul > li > small {
   display: block;
   font-size: .8rem;
-}
-
-.sep {
-  color: #9f9f9f;
-}
-
-.lowp {
-  opacity: .6;
+  margin-top: -3px;
 }
 
 div.item-list {

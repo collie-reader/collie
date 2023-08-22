@@ -1,6 +1,15 @@
 import { confirm } from '@tauri-apps/api/dialog';
 import { createSignal, For, Match, onMount, Switch } from "solid-js";
 
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+import "../styles/Feeds.css";
 import * as api from "../api/feeds";
 
 function Feeds() {
@@ -52,22 +61,21 @@ function Feeds() {
   return (
     <div class="container">
       <h2>Feeds</h2>
-      <div class="row">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            createFeed();
-          }}
-        >
-          <input type="text" placeholder="URL" value={linkToCreate()}
-            onInput={(e) => setLinkToCreate(e.currentTarget.value)} />
-          <button type="submit">Add & Subscribe</button>
-        </form>
-      </div>
-      <div>
-        <ul>
-          <For each={feeds()}>{(feed: api.Feed) =>
-            <li class="row">
+      <form
+        class="row"
+        onSubmit={(e) => {
+          e.preventDefault();
+          createFeed();
+        }}
+      >
+        <input type="text" placeholder="URL" value={linkToCreate()}
+          onInput={(e) => setLinkToCreate(e.currentTarget.value)} />
+        <button type="submit">Add & Subscribe</button>
+      </form>
+      <ul class="feed-list">
+        <For each={feeds()}>{(feed: api.Feed) =>
+          <li class={`${feed.status == api.FeedStatus.UNSUBSCRIBED ? "lowp" : ""}`}>
+            <div class="row">
               <Switch>
                 <Match when={feed.id === idToUpdate()}>
                   <input type="text" value={feed.title}
@@ -77,11 +85,14 @@ function Feeds() {
                   <button onClick={() => updateFeed(feed.id)}>Apply</button>
                 </Match>
                 <Match when={feed.id !== idToUpdate()}>
-                  <span>{feed.title}</span>
-                  <span>(<a href={feed.link} target="_blank">{feed.link}</a>)</span>
+                  <strong><a href={feed.link} target="_blank">{feed.title}</a></strong>
                   <button onClick={() => setIdToUpdate(feed.id)}>Edit</button>
                 </Match>
               </Switch>
+            </div>
+            <small>
+              <span class="sep">Last checked at</span> <span title={dayjs(feed.checked_at).tz(dayjs.tz.guess()).format()}>{dayjs(feed.checked_at).fromNow()}</span>
+              <span class="sep"> | </span>
               <Switch>
                 <Match when={feed.status === api.FeedStatus.SUBSCRIBED}>
                   <button onClick={() => toggleFeedStatus(feed)}>Unsubscribe</button>
@@ -90,11 +101,12 @@ function Feeds() {
                   <button onClick={() => toggleFeedStatus(feed)}>Subscribe</button>
                 </Match>
               </Switch>
+              <span class="sep"> | </span>
               <button onClick={() => deleteFeed(feed)}>Delete</button>
-            </li>
-          }</For>
-        </ul>
-      </div>
+            </small>
+          </li>
+        }</For>
+      </ul>
     </div>
   );
 }

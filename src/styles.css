@@ -18,6 +18,14 @@ div {
   flex-direction: row;
 }
 
+.sep {
+  color: #9f9f9f;
+}
+
+.lowp {
+  opacity: .6;
+}
+
 a {
   color: #005ccc;
   cursor: pointer;

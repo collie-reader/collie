@@ -25,21 +25,21 @@ interface Props {
 function Items(props: Props) {
   const LIMIT = 50;
 
-  function option() {
+  function option(): api.ItemReadOption {
     let opt = { offset: offset(), limit: LIMIT };
 
     switch (props.type) {
       case ItemType.INBOX:
         return opt;
-      case ItemType.SAVED:
-        return { ...opt, is_saved: true };
       case ItemType.UNREAD:
         return { ...opt, status: api.ItemStatus.UNREAD };
+      case ItemType.SAVED:
+        return { ...opt, is_saved: true };
     }
   }
 
   const [offset, setOffset] = createSignal(0);
-  const [opt, setOpt] = createSignal<api.ItemReadOption>(option());
+  const [opt] = createSignal<api.ItemReadOption>(option());
 
   const [items, setItems] = createSignal<api.Item[]>([]);
   const [selectedItem, setSelectedItem] = createSignal<api.Item | null>(null);
@@ -103,13 +103,14 @@ function Items(props: Props) {
                   <span class="sep"> at </span><span title={dayjs(item.published_at).tz(dayjs.tz.guess()).format()}>{dayjs(item.published_at).fromNow()}</span>
                   <span class="sep"> | </span>
                   <Switch>
-                    <Match when={!item.is_saved}><a onClick={() => toggleSave(item)}>Save</a></Match>
-                    <Match when={item.is_saved}><a onClick={() => toggleSave(item)}>Unsave</a></Match>
+                    <Match when={!item.is_saved}><button onClick={() => toggleSave(item)}>Save</button></Match>
+                    <Match when={item.is_saved}><button onClick={() => toggleSave(item)}>Unsave</button></Match>
                   </Switch>
-                  <span class="sep"> | </span><a onClick={() => {
+                  <span class="sep"> | </span>
+                  <button onClick={() => {
                     setSelectedItem(item);
                     markAs(item.id, api.ItemStatus.READ)
-                  }}>More</a>
+                  }}>More</button>
                 </small>
               </li>
             }</For>
