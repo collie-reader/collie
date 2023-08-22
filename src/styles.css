@@ -19,9 +19,9 @@ div {
 }
 
 a {
-  font-weight: 500;
   color: #005ccc;
   cursor: pointer;
+  text-decoration: none;
 }
 
 a:hover {

@@ -1,0 +1,43 @@
+div.item-list {
+  width: 100%;
+}
+
+div.item-list > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+div.item-list > ul > li {
+  margin-bottom: .5rem;
+}
+
+div.item-list > ul > li > small {
+  display: block;
+  font-size: .8rem;
+}
+
+.sep {
+  color: #9f9f9f;
+}
+
+.lowp {
+  opacity: .6;
+}
+
+div.item-list {
+  padding-right: 1rem;
+}
+
+div.item-viewer-container {
+  width: 25vw;
+  border-left: 1px #9f9f9f solid;
+  padding-left: 1rem;
+}
+
+div.item-viewer {
+  position: sticky;
+  overflow-wrap: break-word;
+  width: 25vw;
+  top: 0;
+}
