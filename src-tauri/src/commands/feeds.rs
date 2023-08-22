@@ -1,5 +1,6 @@
 use crate::{
     models::feeds::{self, Feed, FeedToCreate, FeedToUpdate},
+    producer::create_new_items,
     syndication::fecth_feed_title,
 };
 
@@ -16,7 +17,10 @@ pub fn create_feed(arg: FeedToCreate) -> Result<String, String> {
     };
 
     match feeds::create(arg) {
-        Ok(_) => Ok("New feed added".to_string()),
+        Ok(_) => {
+            let _ = create_new_items();
+            Ok("New feed added".to_string())
+        }
         Err(err) => Err(err.to_string()),
     }
 }

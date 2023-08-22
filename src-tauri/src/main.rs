@@ -12,6 +12,7 @@ pub mod commands {
     pub mod items;
 }
 
+pub mod producer;
 pub mod syndication;
 pub mod worker;
 
