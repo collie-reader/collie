@@ -58,6 +58,16 @@ export async function readItems(opt: ItemReadOption): Promise<Item[]> {
   return  [];
 }
 
+export async function countItems(opt: ItemReadOption): Promise<number> {
+  try {
+    return invoke("count_all_items", { opt: { ...opt } });
+  } catch (e) {
+    // Do nothing
+  }
+
+  return  0
+}
+
 export async function save(id: number) {
   try {
     await invoke("update_item", { arg: { id, is_saved: true } });

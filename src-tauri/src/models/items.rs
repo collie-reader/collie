@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use chrono::{DateTime, FixedOffset};
 use rusqlite::{Result, Row};
-use sea_query::{Alias, Expr, Order, Query, SqliteQueryBuilder};
+use sea_query::{Alias, Expr, Func, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
 use sha1_smol::Sha1;
@@ -207,6 +207,37 @@ pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
     let rows = stmt.query_map(&*values.as_params(), |x| Ok(Item::from(x)))?;
 
     Ok(rows.map(|x| x.unwrap()).collect::<Vec<Item>>())
+}
+
+pub fn count_all(opt: ItemReadOption) -> Result<i64> {
+    let db = open_connection()?;
+
+    let mut query = Query::select()
+        .from(Items::Table)
+        .expr(Func::count(Expr::col(Items::Id)))
+        .to_owned();
+
+    if let Some(feed) = opt.feed {
+        query.and_where(Expr::col(Items::Feed).eq(feed));
+    }
+
+    if let Some(status) = opt.status {
+        query.and_where(Expr::col((Items::Table, Items::Status)).eq(status.to_string()));
+    }
+
+    if let Some(is_saved) = opt.is_saved {
+        query.and_where(Expr::col(Items::IsSaved).eq(is_saved));
+    }
+
+    let (sql, values) = query.build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    let mut rows = stmt.query(&*values.as_params())?;
+
+    Ok(if let Some(row) = rows.next()? {
+        row.get_unwrap(0)
+    } else {
+        0
+    })
 }
 
 pub fn update(arg: ItemToUpdate) -> Result<usize> {

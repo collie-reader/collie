@@ -26,6 +26,7 @@ fn main() {
             commands::feeds::update_feed,
             commands::feeds::delete_feed,
             commands::items::read_all_items,
+            commands::items::count_all_items,
             commands::items::update_item,
         ])
         .build(tauri::generate_context!("tauri.conf.json"))

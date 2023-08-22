@@ -39,59 +39,54 @@ function Items(props: Props) {
   }
 
   const [offset, setOffset] = createSignal(0);
-  const [opt] = createSignal<api.ItemReadOption>(option());
+  const [opt, setOpt] = createSignal<api.ItemReadOption>(option());
 
   const [items, setItems] = createSignal<api.Item[]>([]);
   const [selectedItem, setSelectedItem] = createSignal<api.Item | null>(null);
+  const [count, setCount] = createSignal(0);
 
-  const loadNext = async () => {
-    setOffset(offset() + 1);
-    window.scroll(0, 0);
-    setItems(await api.readItems({ ...opt(), offset: offset() }));
+  const loadItems = async () => {
+    setCount(await api.countItems(opt()));
+    setItems(await api.readItems(opt()));
   };
 
-  const loadFirst = async () => {
-    setOffset(0);
+  const loadPage = async (newOffset: number) => {
+    setOffset(newOffset);
+    setOpt({ ...opt(), offset: offset() })
     window.scroll(0, 0);
-    setItems(await api.readItems({ ...opt(), offset: offset() }));
-  };
-
-  const loadPrev = async () => {
-    setOffset(offset() - 1);
-    window.scroll(0, 0);
-    setItems(await api.readItems({ ...opt(), offset: offset() }));
+    await loadItems();
   };
 
   const toggleSave = async (item: api.Item) => {
     if (item.is_saved) {
-      api.unsave(item.id)
+      await api.unsave(item.id)
     } else{
-      api.save(item.id)
+      await api.save(item.id)
     }
 
-    setItems(await api.readItems({ ...opt(), offset: offset() }));
+    await loadItems();
   }
 
   const markAs = async (id: number, status: api.ItemStatus) => {
     if (status !== opt().status) {
       await api.markAs(id, status);
-      setItems(await api.readItems(opt()));
+      await loadItems();
     }
   };
 
   onMount(async () => {
     listen('feed_updated', async (_) => {
-      setItems(await api.readItems(opt()));
+      await loadItems();
     });
 
-    setItems(await api.readItems(opt()));
+    await loadItems();
   });
 
   return (
     <div class="container">
       <div class="row">
         <div class="item-list">
-          <h2>{props.type.valueOf()}</h2>
+          <h2>{props.type.valueOf()} ({count()})</h2>
           <ul>
             <For each={items()}>{(item: api.Item) =>
               <li class={`${item.status == api.ItemStatus.READ ? "lowp" : ""}`}>
@@ -117,13 +112,13 @@ function Items(props: Props) {
           </ul>
           <div class="row">
             <Show when={offset() > 3}>
-              <button onClick={() => loadFirst()}>←← 1</button>
+              <button onClick={() => loadPage(0)}>←← 1</button>
             </Show>
             <Show when={offset() > 0}>
-              <button onClick={() => loadPrev()}>← {offset()}</button>
+              <button onClick={() => loadPage(offset() - 1)}>← {offset()}</button>
             </Show>
-            <Show when={items().length >= LIMIT}>
-              <button onClick={() => loadNext()}>{offset() + 2} →</button>
+            <Show when={(offset() + 1) * LIMIT < count()}>
+              <button onClick={() => loadPage(offset() + 1)}>{offset() + 2} →</button>
             </Show>
           </div>
         </div>

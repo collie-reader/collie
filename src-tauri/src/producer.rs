@@ -1,4 +1,4 @@
-use chrono::{Utc};
+use chrono::Utc;
 
 use crate::models::feeds::FeedStatus;
 use crate::syndication::RawItem;

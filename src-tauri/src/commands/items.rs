@@ -9,6 +9,14 @@ pub fn read_all_items(opt: ItemReadOption) -> Result<Vec<Item>, String> {
 }
 
 #[tauri::command]
+pub fn count_all_items(opt: ItemReadOption) -> Result<i64, String> {
+    match items::count_all(opt) {
+        Ok(count) => Ok(count),
+        Err(err) => Err(err.to_string()),
+    }
+}
+
+#[tauri::command]
 pub fn update_item(arg: ItemToUpdate) -> Result<String, String> {
     match items::update(arg) {
         Ok(_) => Ok("Item updated".to_string()),
