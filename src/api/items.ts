@@ -5,6 +5,12 @@ export enum ItemStatus {
   READ = "Read",
 }
 
+export interface ItemFeed {
+  id: number,
+  title: string,
+  link: string,
+}
+
 export interface Item {
   id: number,
   fingerprint: string,
@@ -15,7 +21,7 @@ export interface Item {
   status: ItemStatus,
   is_saved: boolean,
   published_at: string,
-  feed: number,
+  feed: ItemFeed,
 }
 
 export interface ItemToCreate {

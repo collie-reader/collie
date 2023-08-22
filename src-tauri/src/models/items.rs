@@ -3,12 +3,12 @@ use std::str::FromStr;
 
 use chrono::{DateTime, FixedOffset};
 use rusqlite::{Result, Row};
-use sea_query::{Expr, Order, Query, SqliteQueryBuilder};
+use sea_query::{Alias, Expr, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
 use sha1_smol::Sha1;
 
-use super::database::{open_connection, Items};
+use super::database::{open_connection, Feeds, Items};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum ItemStatus {
@@ -38,6 +38,13 @@ impl FromStr for ItemStatus {
 }
 
 #[derive(Serialize, Debug)]
+pub struct ItemFeed {
+    id: i32,
+    title: String,
+    link: String,
+}
+
+#[derive(Serialize, Debug)]
 pub struct Item {
     id: i32,
     fingerprint: String,
@@ -48,7 +55,7 @@ pub struct Item {
     status: ItemStatus,
     is_saved: bool,
     published_at: DateTime<FixedOffset>,
-    feed: i32,
+    feed: ItemFeed,
 }
 
 impl From<&Row<'_>> for Item {
@@ -63,7 +70,11 @@ impl From<&Row<'_>> for Item {
             status: ItemStatus::from_str(&row.get_unwrap::<&str, String>("status")).unwrap(),
             is_saved: row.get_unwrap("is_saved"),
             published_at: row.get_unwrap("published_at"),
-            feed: row.get_unwrap("feed"),
+            feed: ItemFeed {
+                id: row.get_unwrap("feed_id"),
+                title: row.get_unwrap("feed_title"),
+                link: row.get_unwrap("feed_link"),
+            },
         }
     }
 }
@@ -142,22 +153,32 @@ pub fn create(arg: &ItemToCreate) -> Result<usize> {
 pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
     let db = open_connection()?;
 
-    let cols = [
-        Items::Id,
-        Items::Fingerprint,
-        Items::Author,
-        Items::Title,
-        Items::Description,
-        Items::Link,
-        Items::Status,
-        Items::IsSaved,
-        Items::PublishedAt,
-        Items::Feed,
-    ];
-
     let mut query = Query::select()
-        .columns(cols)
+        .columns([
+            (Items::Table, Items::Id),
+            (Items::Table, Items::Fingerprint),
+            (Items::Table, Items::Author),
+            (Items::Table, Items::Title),
+            (Items::Table, Items::Description),
+            (Items::Table, Items::Link),
+            (Items::Table, Items::Status),
+            (Items::Table, Items::IsSaved),
+            (Items::Table, Items::PublishedAt),
+        ])
+        .expr_as(Expr::col((Feeds::Table, Feeds::Id)), Alias::new("feed_id"))
+        .expr_as(
+            Expr::col((Feeds::Table, Feeds::Title)),
+            Alias::new("feed_title"),
+        )
+        .expr_as(
+            Expr::col((Feeds::Table, Feeds::Link)),
+            Alias::new("feed_link"),
+        )
         .from(Items::Table)
+        .inner_join(
+            Feeds::Table,
+            Expr::col((Items::Table, Items::Feed)).equals((Feeds::Table, Feeds::Id)),
+        )
         .order_by(Items::PublishedAt, Order::Desc)
         .to_owned();
 

@@ -98,8 +98,9 @@ function Items(props: Props) {
                 <strong><a href={item.link} target="_blank"
                   onClick={() => markAs(item.id, api.ItemStatus.READ)}>{item.title}</a></strong>
                 <small class="row">
-                  <span class="sep">by</span> {item.author}
-                  <span class="sep"> at</span> <span title={dayjs(item.published_at).tz(dayjs.tz.guess()).format()}>{dayjs(item.published_at).fromNow()}</span>
+                  <span class="sep">on </span>{item.feed.title}
+                  <span class="sep"> by </span>{item.author}
+                  <span class="sep"> at </span><span title={dayjs(item.published_at).tz(dayjs.tz.guess()).format()}>{dayjs(item.published_at).fromNow()}</span>
                   <span class="sep"> | </span>
                   <Switch>
                     <Match when={!item.is_saved}><a onClick={() => toggleSave(item)}>Save</a></Match>
