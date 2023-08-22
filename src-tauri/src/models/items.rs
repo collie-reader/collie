@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use chrono::{DateTime, FixedOffset};
 use rusqlite::{Result, Row};
-use sea_query::{Expr, Query, SqliteQueryBuilder};
+use sea_query::{Expr, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
 use sha1_smol::Sha1;
@@ -153,7 +153,11 @@ pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
         Items::Feed,
     ];
 
-    let mut query = Query::select().columns(cols).from(Items::Table).to_owned();
+    let mut query = Query::select()
+        .columns(cols)
+        .from(Items::Table)
+        .order_by(Items::PublishedAt, Order::Desc)
+        .to_owned();
 
     if let Some(feed) = opt.feed {
         query.and_where(Expr::col(Items::Feed).eq(feed));

@@ -25,7 +25,7 @@ pub fn start(app_id: String, handle: AppHandle) {
             };
         }
 
-        if inserted.len() > 0 {
+        if !inserted.is_empty() {
             notify(&app_id, &inserted);
             let _ = handle.emit_all("feed_updated", ());
         }

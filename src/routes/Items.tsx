@@ -3,7 +3,11 @@ import { createSignal, For, Match, onMount, Show, Switch } from "solid-js";
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(relativeTime);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 import "../styles/Items.css";
 import * as api from "../api/items";
@@ -83,7 +87,8 @@ function Items(props: Props) {
                 <strong><a href={item.link} target="_blank"
                   onClick={() => markAs(item.id, api.ItemStatus.READ)}>{item.title}</a></strong>
                 <small class="row">
-                  <span class="sep">by</span> {item.author} <span title={item.published_at}>{dayjs(item.published_at).fromNow()}</span>
+                  <span class="sep">by</span> {item.author}
+                  <span class="sep"> at</span> <span title={dayjs(item.published_at).tz(dayjs.tz.guess()).format()}>{dayjs(item.published_at).fromNow()}</span>
                   <span class="sep"> | </span><a onClick={() => markAs(item.id, api.ItemStatus.SAVED)}>Save</a>
                   <span class="sep"> | </span><a onClick={() => {
                     setSelectedItem(item);
