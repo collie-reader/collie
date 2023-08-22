@@ -92,11 +92,7 @@ pub struct ItemToCreate {
 
 impl ItemToCreate {
     pub fn fingerprint(&self) -> String {
-        Sha1::from(format!(
-            "{}:{}:{}",
-            &self.title, &self.description, &self.link
-        ))
-        .hexdigest()
+        Sha1::from(format!("{}:{}", &self.title, &self.link)).hexdigest()
     }
 }
 
@@ -223,7 +219,6 @@ pub fn update(arg: ItemToUpdate) -> Result<usize> {
     if let Some(is_saved) = arg.is_saved {
         vals.push((Items::IsSaved, is_saved.into()));
     }
-    println!("vals: ");
 
     let (sql, values) = Query::update()
         .table(Items::Table)
