@@ -1,3 +1,9 @@
+use core::fmt;
+use std::{
+    fmt::{Display, Formatter},
+    str::FromStr,
+};
+
 use chrono::{DateTime, FixedOffset, Utc};
 use rusqlite::{Result, Row};
 use sea_query::{Expr, Query, SqliteQueryBuilder};
@@ -6,11 +12,39 @@ use serde::{Deserialize, Serialize};
 
 use super::database::{open_connection, Feeds};
 
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub enum FeedStatus {
+    Subscribed,
+    Unsubscribed,
+}
+
+impl Display for FeedStatus {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            FeedStatus::Subscribed => write!(f, "subscribed"),
+            FeedStatus::Unsubscribed => write!(f, "unsubscribed"),
+        }
+    }
+}
+
+impl FromStr for FeedStatus {
+    type Err = ();
+
+    fn from_str(x: &str) -> Result<FeedStatus, Self::Err> {
+        match x {
+            "subscribed" => Ok(FeedStatus::Subscribed),
+            "unsubscribed" => Ok(FeedStatus::Unsubscribed),
+            _ => Err(()),
+        }
+    }
+}
+
 #[derive(Serialize, Debug)]
 pub struct Feed {
     pub id: i32,
     pub title: String,
     pub link: String,
+    pub status: FeedStatus,
     pub checked_at: DateTime<FixedOffset>,
 }
 
@@ -20,6 +54,7 @@ impl From<&Row<'_>> for Feed {
             id: row.get_unwrap("id"),
             title: row.get_unwrap("title"),
             link: row.get_unwrap("link"),
+            status: FeedStatus::from_str(&row.get_unwrap::<&str, String>("status")).unwrap(),
             checked_at: row.get_unwrap("checked_at"),
         }
     }
@@ -36,6 +71,7 @@ pub struct FeedToUpdate {
     pub id: i32,
     pub title: Option<String>,
     pub link: Option<String>,
+    pub status: Option<FeedStatus>,
     pub checked_at: Option<DateTime<FixedOffset>>,
 }
 
@@ -56,7 +92,13 @@ pub fn create(arg: FeedToCreate) -> Result<usize> {
 pub fn read_all() -> Result<Vec<Feed>> {
     let db = open_connection()?;
 
-    let cols = [Feeds::Id, Feeds::Title, Feeds::Link, Feeds::CheckedAt];
+    let cols = [
+        Feeds::Id,
+        Feeds::Title,
+        Feeds::Link,
+        Feeds::Status,
+        Feeds::CheckedAt,
+    ];
     let (sql, values) = Query::select()
         .columns(cols)
         .from(Feeds::Table)
@@ -77,6 +119,9 @@ pub fn update(arg: &FeedToUpdate) -> Result<usize> {
     }
     if let Some(link) = &arg.link {
         vals.push((Feeds::Link, link.into()));
+    }
+    if let Some(status) = &arg.status {
+        vals.push((Feeds::Status, status.to_string().into()));
     }
     if let Some(checked_at) = arg.checked_at {
         vals.push((Feeds::CheckedAt, checked_at.into()));

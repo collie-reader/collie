@@ -1,9 +1,15 @@
 import { invoke } from "@tauri-apps/api/tauri";
 
+export enum FeedStatus {
+  SUBSCRIBED = "Subscribed",
+  UNSUBSCRIBED = "Unsubscribed",
+}
+
 export interface Feed {
     id: number,
     title: string,
     link: string,
+    status: FeedStatus,
     checked_at: string,
 }
 
@@ -14,8 +20,9 @@ export interface FeedToCreate {
 
 export interface FeedToUpdate {
     id: number,
-    title: string | null,
-    link: string | null,
+    title?: string | null,
+    link?: string | null,
+    status?: FeedStatus | null,
 }
 
 export async function createFeed(arg: FeedToCreate) {

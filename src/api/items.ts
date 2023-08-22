@@ -9,7 +9,7 @@ export enum ItemStatus {
 export interface Item {
   id: number,
   fingerprint: string,
-  author: string | null,
+  author?: string | null,
   title: string,
   description: string,
   link: string,
@@ -19,7 +19,7 @@ export interface Item {
 }
 
 export interface ItemToCreate {
-  author: string | null,
+  author?: string | null,
   title: string,
   description: string,
   link: string,
@@ -30,7 +30,7 @@ export interface ItemToCreate {
 
 export interface ItemToUpdate {
   id: number,
-  status: ItemStatus | null,
+  status?: ItemStatus | null,
 }
 
 export interface ItemReadOption {

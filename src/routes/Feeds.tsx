@@ -1,3 +1,4 @@
+import { confirm } from '@tauri-apps/api/dialog';
 import { createSignal, For, Match, onMount, Switch } from "solid-js";
 
 import * as api from "../api/feeds";
@@ -25,9 +26,23 @@ function Feeds() {
     setLinkToUpdate(null);
   };
 
-  const deleteFeed = async (id: number) => {
-    await api.deleteFeed(id);
+  const toggleFeedStatus = async (feed: api.Feed) => {
+    switch (feed.status) {
+      case api.FeedStatus.SUBSCRIBED:
+        await api.updateFeed({ id: feed.id, status: api.FeedStatus.UNSUBSCRIBED } );
+        break;
+      case api.FeedStatus.UNSUBSCRIBED:
+        await api.updateFeed({ id: feed.id, status: api.FeedStatus.SUBSCRIBED } );
+    }
+
     setFeeds(await api.readAllFeeds());
+  };
+
+  const deleteFeed = async (feed: api.Feed) => {
+    if (await confirm(`A feed \"${feed.title}\" and their all items will be deleted. Are you sure?`)) {
+      await api.deleteFeed(feed.id);
+      setFeeds(await api.readAllFeeds());
+    }
   };
 
   onMount(async () => {
@@ -46,7 +61,7 @@ function Feeds() {
         >
           <input type="text" placeholder="URL" value={linkToCreate()}
             onInput={(e) => setLinkToCreate(e.currentTarget.value)} />
-          <button type="submit">Subscribe</button>
+          <button type="submit">Add & Subscribe</button>
         </form>
       </div>
       <div>
@@ -67,7 +82,15 @@ function Feeds() {
                   <button onClick={() => setIdToUpdate(feed.id)}>Edit</button>
                 </Match>
               </Switch>
-              <button onClick={() => deleteFeed(feed.id)}>Unsubscribe</button>
+              <Switch>
+                <Match when={feed.status === api.FeedStatus.SUBSCRIBED}>
+                  <button onClick={() => toggleFeedStatus(feed)}>Unsubscribe</button>
+                </Match>
+                <Match when={feed.status === api.FeedStatus.UNSUBSCRIBED}>
+                  <button onClick={() => toggleFeedStatus(feed)}>Subscribe</button>
+                </Match>
+              </Switch>
+              <button onClick={() => deleteFeed(feed)}>Delete</button>
             </li>
           }</For>
         </ul>

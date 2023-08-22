@@ -6,6 +6,7 @@ use tauri::Manager;
 use chrono::{DateTime, Duration, Utc};
 use tauri::api::notification::Notification;
 
+use crate::models::feeds::FeedStatus;
 use crate::{
     models::{
         feeds::{self, FeedToUpdate},
@@ -39,7 +40,8 @@ fn get_links_to_check() -> Vec<(i32, String)> {
         let current = Utc::now().fixed_offset();
         let filtered = feeds
             .iter()
-            .filter(|x| x.checked_at + Duration::seconds(120) <= current);
+            .filter(|x| x.checked_at + Duration::seconds(120) <= current)
+            .filter(|x| x.status == FeedStatus::Subscribed);
 
         filtered
             .map(|x| {
@@ -47,6 +49,7 @@ fn get_links_to_check() -> Vec<(i32, String)> {
                     id: x.id,
                     title: None,
                     link: None,
+                    status: None,
                     checked_at: Some(current),
                 });
                 (x.id, x.link.clone())

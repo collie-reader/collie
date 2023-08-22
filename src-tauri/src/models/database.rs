@@ -9,6 +9,7 @@ pub enum Feeds {
     Id,
     Title,
     Link,
+    Status,
     CheckedAt,
 }
 
@@ -45,6 +46,13 @@ pub fn migrate() -> Result<()> {
         )
         .col(ColumnDef::new(Feeds::Title).text().not_null())
         .col(ColumnDef::new(Feeds::Link).text().not_null())
+        .col(
+            ColumnDef::new(Feeds::Status)
+                .text()
+                .check(Expr::col(Feeds::Status).is_in(["subscribed", "unsubscribed"]))
+                .not_null()
+                .default("subscribed"),
+        )
         .col(ColumnDef::new(Feeds::CheckedAt).date_time().not_null())
         .index(
             Index::create()
