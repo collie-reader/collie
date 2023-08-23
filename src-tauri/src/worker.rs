@@ -5,9 +5,22 @@ use tauri::Manager;
 
 use tauri::api::notification::Notification;
 
+use crate::models::settings;
+use crate::models::settings::SettingKey;
 use crate::{models::items::ItemToCreate, producer::create_new_items};
 
 pub fn start(app_id: String, handle: AppHandle) {
+    let polling_frequency = settings::read(SettingKey::PollingFrequency)
+        .map(|x| x.value)
+        .unwrap_or("120".to_string())
+        .parse()
+        .unwrap_or(120);
+    let polling_frequency = if polling_frequency < 30 {
+        30
+    } else {
+        polling_frequency
+    };
+
     thread::spawn(move || loop {
         let inserted = create_new_items();
         if !inserted.is_empty() {
@@ -15,7 +28,7 @@ pub fn start(app_id: String, handle: AppHandle) {
             let _ = handle.emit_all("feed_updated", ());
         }
 
-        thread::sleep(time::Duration::from_secs(120));
+        thread::sleep(time::Duration::from_secs(polling_frequency));
     });
 }
 

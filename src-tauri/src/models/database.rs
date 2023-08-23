@@ -1,7 +1,8 @@
 use rusqlite::{Connection, Result};
 use sea_query::{
-    ColumnDef, Expr, ForeignKey, ForeignKeyAction, Iden, Index, SqliteQueryBuilder, Table,
+    ColumnDef, Expr, ForeignKey, ForeignKeyAction, Iden, Index, Query, SqliteQueryBuilder, Table,
 };
+use sea_query_rusqlite::RusqliteBinder;
 
 #[derive(Iden)]
 pub enum Feeds {
@@ -26,6 +27,13 @@ pub enum Items {
     IsSaved,
     PublishedAt,
     Feed,
+}
+
+#[derive(Iden)]
+pub enum Settings {
+    Table,
+    Key,
+    Value,
 }
 
 pub fn open_connection() -> Result<Connection> {
@@ -110,7 +118,38 @@ pub fn migrate() -> Result<()> {
         )
         .build(SqliteQueryBuilder);
 
-    db.execute_batch(&[create_table_feeds, create_table_items].join(";"))?;
+    let create_table_settings = Table::create()
+        .table(Settings::Table)
+        .if_not_exists()
+        .col(
+            ColumnDef::new(Settings::Key)
+                .text()
+                .check(Expr::col(Settings::Key).is_in(["polling_frequency"]))
+                .not_null()
+                .primary_key(),
+        )
+        .col(ColumnDef::new(Settings::Value).text().not_null())
+        .build(SqliteQueryBuilder);
+
+    db.execute_batch(
+        &[
+            create_table_feeds,
+            create_table_items,
+            create_table_settings,
+        ]
+        .join(";"),
+    )?;
+
+    let (insert_settings_sql, insert_settings_values) = Query::insert()
+        .into_table(Settings::Table)
+        .columns([Settings::Key, Settings::Value])
+        .values_panic(["polling_frequency".into(), "120".into()])
+        .build_rusqlite(SqliteQueryBuilder);
+
+    db.execute(
+        insert_settings_sql.as_str(),
+        &*insert_settings_values.as_params(),
+    )?;
 
     Ok(())
 }

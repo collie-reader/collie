@@ -1,0 +1,15 @@
+ul.setting-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+ul.setting-list > li {
+  margin-bottom: .5rem;
+}
+
+ul.setting-list > li > small {
+  display: block;
+  font-size: .8rem;
+  margin-top: -3px;
+}

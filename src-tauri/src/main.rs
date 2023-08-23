@@ -5,13 +5,16 @@ pub mod models {
     pub mod database;
     pub mod feeds;
     pub mod items;
+    pub mod settings;
 }
 
 pub mod commands {
     pub mod feeds;
     pub mod items;
+    pub mod settings;
 }
 
+pub mod error;
 pub mod producer;
 pub mod syndication;
 pub mod worker;
@@ -29,6 +32,8 @@ fn main() {
             commands::items::read_all_items,
             commands::items::count_all_items,
             commands::items::update_item,
+            commands::settings::read_all_settings,
+            commands::settings::update_setting,
         ])
         .build(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");
