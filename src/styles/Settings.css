@@ -13,3 +13,7 @@ ul.setting-list > li > small {
   font-size: .8rem;
   margin-top: -3px;
 }
+
+label, button {
+  margin-left: 5px;
+}

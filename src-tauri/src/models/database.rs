@@ -1,10 +1,12 @@
 use std::path::Path;
 
-use rusqlite::{Connection, Result};
+use rusqlite::Connection;
 use sea_query::{
     ColumnDef, Expr, ForeignKey, ForeignKeyAction, Iden, Index, Query, SqliteQueryBuilder, Table,
 };
 use sea_query_rusqlite::RusqliteBinder;
+
+use crate::error::Result;
 
 #[derive(Iden)]
 pub enum Feeds {
@@ -39,7 +41,7 @@ pub enum Settings {
 }
 
 pub fn open_connection(path: &Path) -> Result<Connection> {
-    Connection::open(path.join("collie.db"))
+    Ok(Connection::open(path.join("collie.db"))?)
 }
 
 pub fn migrate(db: &Connection) -> Result<()> {
@@ -124,7 +126,6 @@ pub fn migrate(db: &Connection) -> Result<()> {
         .col(
             ColumnDef::new(Settings::Key)
                 .text()
-                .check(Expr::col(Settings::Key).is_in(["polling_frequency"]))
                 .not_null()
                 .primary_key(),
         )
@@ -140,16 +141,21 @@ pub fn migrate(db: &Connection) -> Result<()> {
         .join(";"),
     )?;
 
+    let _ = insert_settings(db, "polling_frequency", "120");
+    let _ = insert_settings(db, "notification", "1");
+
+    Ok(())
+}
+
+fn insert_settings(db: &Connection, key: &str, value: &str) -> Result<usize> {
     let (insert_settings_sql, insert_settings_values) = Query::insert()
         .into_table(Settings::Table)
         .columns([Settings::Key, Settings::Value])
-        .values_panic(["polling_frequency".into(), "120".into()])
+        .values([key.into(), value.into()])?
         .build_rusqlite(SqliteQueryBuilder);
 
-    db.execute(
+    Ok(db.execute(
         insert_settings_sql.as_str(),
         &*insert_settings_values.as_params(),
-    )?;
-
-    Ok(())
+    )?)
 }

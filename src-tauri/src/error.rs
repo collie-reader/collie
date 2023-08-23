@@ -14,6 +14,12 @@ pub enum Error {
         #[from]
         source: rusqlite::Error,
     },
+
+    #[error(transparent)]
+    SeaQueryError {
+        #[from]
+        source: sea_query::error::Error,
+    },
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -16,12 +16,14 @@ use super::database::Settings;
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum SettingKey {
     PollingFrequency, // seconds
+    Notification,
 }
 
 impl Display for SettingKey {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             SettingKey::PollingFrequency => write!(f, "polling_frequency"),
+            SettingKey::Notification => write!(f, "notification"),
         }
     }
 }
@@ -32,6 +34,7 @@ impl FromStr for SettingKey {
     fn from_str(x: &str) -> std::result::Result<SettingKey, Self::Err> {
         match x {
             "polling_frequency" => Ok(SettingKey::PollingFrequency),
+            "notification" => Ok(SettingKey::Notification),
             _ => Err(Error::InvalidEnumKey(
                 x.to_string(),
                 "SettingKey".to_string(),
@@ -91,6 +94,11 @@ pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
     match arg.key {
         SettingKey::PollingFrequency => {
             if arg.value.parse::<i32>().map(|x| x < 30).unwrap_or(false) {
+                return Err(Error::Unknown);
+            }
+        }
+        SettingKey::Notification => {
+            if arg.value.parse::<bool>().unwrap_or(false) {
                 return Err(Error::Unknown);
             }
         }

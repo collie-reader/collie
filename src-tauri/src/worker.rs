@@ -23,7 +23,10 @@ pub fn start(app: &App) {
     thread::spawn(move || loop {
         let inserted = create_new_items(&db);
         if !inserted.is_empty() {
-            notify(&app_id, &inserted);
+            if notification(&db) {
+                notify(&app_id, &inserted);
+            }
+
             let _ = app_handle.emit_all("feed_updated", ());
         }
 
@@ -37,6 +40,14 @@ fn polling_frequency(db: &Connection) -> u64 {
         .unwrap_or("120".to_string())
         .parse()
         .unwrap_or(120)
+}
+
+fn notification(db: &Connection) -> bool {
+    settings::read(db, SettingKey::Notification)
+        .map(|x| x.value)
+        .unwrap_or("1".to_string())
+        .parse()
+        .unwrap_or(true)
 }
 
 fn notify(app_id: &str, args: &[ItemToCreate]) {
