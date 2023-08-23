@@ -111,7 +111,7 @@ function Items(props: Props) {
               <h2>
                 <a onClick={() => history.back()}>←</a>
                 <span> {`${feed() ? feed()?.title : 'Feed'} (${count()})`}</span>
-              </h2>;
+              </h2>
             </Match>
           </Switch>
           <ul>
