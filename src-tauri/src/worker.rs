@@ -1,3 +1,4 @@
+use regex::Regex;
 use rusqlite::Connection;
 use std::thread;
 use std::time;
@@ -43,7 +44,11 @@ fn notify(app_id: &str, args: &[ItemToCreate]) {
         for arg in args {
             let _ = Notification::new(app_id)
                 .title(&arg.title)
-                .body(&arg.description)
+                .body(
+                    Regex::new(r"<.*?>")
+                        .unwrap()
+                        .replace_all(&arg.description, ""),
+                )
                 .show();
         }
     } else {

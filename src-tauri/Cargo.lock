@@ -521,6 +521,7 @@ name = "collie"
 version = "0.0.0"
 dependencies = [
  "chrono",
+ "regex",
  "reqwest",
  "rusqlite",
  "sea-query",
