@@ -1,4 +1,4 @@
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, Utc};
 use std::error::Error;
 use syndication::Feed;
 
@@ -41,7 +41,10 @@ pub fn fecth_feed_items(link: &str) -> Result<Vec<RawItem>, Box<dyn Error>> {
                     .map(|x| x.unwrap().to_string()),
                 published_at: x
                     .published()
-                    .map(DateTime::parse_from_rfc3339)
+                    .map(|x| {
+                        DateTime::parse_from_rfc3339(x)
+                            .map(|x| x.with_timezone(&Utc).fixed_offset())
+                    })
                     .filter(|x| x.is_ok())
                     .map(|x| x.unwrap()),
             })
@@ -59,7 +62,10 @@ pub fn fecth_feed_items(link: &str) -> Result<Vec<RawItem>, Box<dyn Error>> {
                 content: x.description().map(|x| x.to_string()),
                 published_at: x
                     .pub_date()
-                    .map(DateTime::parse_from_rfc2822)
+                    .map(|x| {
+                        DateTime::parse_from_rfc2822(x)
+                            .map(|x| x.with_timezone(&Utc).fixed_offset())
+                    })
                     .filter(|x| x.is_ok())
                     .map(|x| x.unwrap()),
             })
