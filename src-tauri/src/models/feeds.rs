@@ -5,10 +5,12 @@ use std::{
 };
 
 use chrono::{DateTime, FixedOffset, Utc};
-use rusqlite::{Result, Row};
+use rusqlite::Row;
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
+
+use crate::error::{Error, Result};
 
 use super::database::{open_connection, Feeds};
 
@@ -28,13 +30,16 @@ impl Display for FeedStatus {
 }
 
 impl FromStr for FeedStatus {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(x: &str) -> Result<FeedStatus, Self::Err> {
+    fn from_str(x: &str) -> std::result::Result<FeedStatus, Self::Err> {
         match x {
             "subscribed" => Ok(FeedStatus::Subscribed),
             "unsubscribed" => Ok(FeedStatus::Unsubscribed),
-            _ => Err(()),
+            _ => Err(Error::InvalidEnumKey(
+                x.to_string(),
+                "FeedStatus".to_string(),
+            )),
         }
     }
 }
@@ -78,29 +83,26 @@ pub struct FeedToUpdate {
 pub fn create(arg: FeedToCreate) -> Result<usize> {
     let db = open_connection()?;
 
-    let cols = [Feeds::Title, Feeds::Link, Feeds::CheckedAt];
-    let vals = [arg.title.into(), arg.link.into(), Utc::now().into()];
     let (sql, values) = Query::insert()
         .into_table(Feeds::Table)
-        .columns(cols)
-        .values_panic(vals)
+        .columns([Feeds::Title, Feeds::Link, Feeds::CheckedAt])
+        .values_panic([arg.title.into(), arg.link.into(), Utc::now().into()])
         .build_rusqlite(SqliteQueryBuilder);
 
-    db.execute(sql.as_str(), &*values.as_params())
+    Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }
 
 pub fn read_all() -> Result<Vec<Feed>> {
     let db = open_connection()?;
 
-    let cols = [
-        Feeds::Id,
-        Feeds::Title,
-        Feeds::Link,
-        Feeds::Status,
-        Feeds::CheckedAt,
-    ];
     let (sql, values) = Query::select()
-        .columns(cols)
+        .columns([
+            Feeds::Id,
+            Feeds::Title,
+            Feeds::Link,
+            Feeds::Status,
+            Feeds::CheckedAt,
+        ])
         .from(Feeds::Table)
         .build_rusqlite(SqliteQueryBuilder);
 
@@ -136,15 +138,19 @@ pub fn update(arg: &FeedToUpdate) -> Result<usize> {
     let db = open_connection()?;
 
     let mut vals = vec![];
+
     if let Some(title) = &arg.title {
         vals.push((Feeds::Title, title.into()));
     }
+
     if let Some(link) = &arg.link {
         vals.push((Feeds::Link, link.into()));
     }
+
     if let Some(status) = &arg.status {
         vals.push((Feeds::Status, status.to_string().into()));
     }
+
     if let Some(checked_at) = arg.checked_at {
         vals.push((Feeds::CheckedAt, checked_at.into()));
     }
@@ -155,7 +161,7 @@ pub fn update(arg: &FeedToUpdate) -> Result<usize> {
         .and_where(Expr::col(Feeds::Id).eq(arg.id))
         .build_rusqlite(SqliteQueryBuilder);
 
-    db.execute(sql.as_str(), &*values.as_params())
+    Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }
 
 pub fn delete(id: i32) -> Result<usize> {
@@ -166,5 +172,5 @@ pub fn delete(id: i32) -> Result<usize> {
         .and_where(Expr::col(Feeds::Id).eq(id))
         .build_rusqlite(SqliteQueryBuilder);
 
-    db.execute(sql.as_str(), &*values.as_params())
+    Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }

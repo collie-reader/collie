@@ -2,11 +2,13 @@ use core::fmt::{self, Display, Formatter};
 use std::str::FromStr;
 
 use chrono::{DateTime, FixedOffset};
-use rusqlite::{Result, Row};
+use rusqlite::Row;
 use sea_query::{Alias, Expr, Func, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
 use sha1_smol::Sha1;
+
+use crate::error::{Error, Result};
 
 use super::database::{open_connection, Feeds, Items};
 
@@ -26,13 +28,16 @@ impl Display for ItemStatus {
 }
 
 impl FromStr for ItemStatus {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(x: &str) -> Result<ItemStatus, Self::Err> {
+    fn from_str(x: &str) -> std::result::Result<ItemStatus, Self::Err> {
         match x {
             "unread" => Ok(ItemStatus::Unread),
             "read" => Ok(ItemStatus::Read),
-            _ => Err(()),
+            _ => Err(Error::InvalidEnumKey(
+                x.to_string(),
+                "ItemStatus".to_string(),
+            )),
         }
     }
 }
@@ -115,35 +120,31 @@ pub struct ItemReadOption {
 pub fn create(arg: &ItemToCreate) -> Result<usize> {
     let db = open_connection()?;
 
-    let cols = [
-        Items::Fingerprint,
-        Items::Author,
-        Items::Title,
-        Items::Description,
-        Items::Link,
-        Items::Status,
-        Items::PublishedAt,
-        Items::Feed,
-    ];
-
-    let vals = [
-        arg.fingerprint().into(),
-        arg.author.clone().into(),
-        arg.title.clone().into(),
-        arg.description.clone().into(),
-        arg.link.clone().into(),
-        arg.status.to_string().into(),
-        arg.published_at.into(),
-        arg.feed.into(),
-    ];
-
     let (sql, values) = Query::insert()
         .into_table(Items::Table)
-        .columns(cols)
-        .values_panic(vals)
+        .columns([
+            Items::Fingerprint,
+            Items::Author,
+            Items::Title,
+            Items::Description,
+            Items::Link,
+            Items::Status,
+            Items::PublishedAt,
+            Items::Feed,
+        ])
+        .values_panic([
+            arg.fingerprint().into(),
+            arg.author.clone().into(),
+            arg.title.clone().into(),
+            arg.description.clone().into(),
+            arg.link.clone().into(),
+            arg.status.to_string().into(),
+            arg.published_at.into(),
+            arg.feed.into(),
+        ])
         .build_rusqlite(SqliteQueryBuilder);
 
-    db.execute(sql.as_str(), &*values.as_params())
+    Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }
 
 pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
@@ -244,9 +245,11 @@ pub fn update(arg: ItemToUpdate) -> Result<usize> {
     let db = open_connection()?;
 
     let mut vals = vec![];
+
     if let Some(status) = arg.status {
         vals.push((Items::Status, status.to_string().into()));
     }
+
     if let Some(is_saved) = arg.is_saved {
         vals.push((Items::IsSaved, is_saved.into()));
     }
@@ -257,5 +260,5 @@ pub fn update(arg: ItemToUpdate) -> Result<usize> {
         .and_where(Expr::col(Items::Id).eq(arg.id))
         .build_rusqlite(SqliteQueryBuilder);
 
-    db.execute(sql.as_str(), &*values.as_params())
+    Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }

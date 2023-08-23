@@ -4,12 +4,12 @@ use std::{
     str::FromStr,
 };
 
-use rusqlite::{Result, Row};
+use rusqlite::Row;
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
 
-use crate::error::Error;
+use crate::error::{Error, Result};
 
 use super::database::{open_connection, Settings};
 
@@ -27,12 +27,15 @@ impl Display for SettingKey {
 }
 
 impl FromStr for SettingKey {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(x: &str) -> Result<SettingKey, Self::Err> {
+    fn from_str(x: &str) -> std::result::Result<SettingKey, Self::Err> {
         match x {
             "polling_frequency" => Ok(SettingKey::PollingFrequency),
-            _ => Err(()),
+            _ => Err(Error::InvalidEnumKey(
+                x.to_string(),
+                "SettingKey".to_string(),
+            )),
         }
     }
 }
@@ -72,7 +75,7 @@ pub fn read_all() -> Result<Vec<Setting>> {
     Ok(rows.map(|x| x.unwrap()).collect::<Vec<Setting>>())
 }
 
-pub fn read(key: SettingKey) -> Result<Setting, rusqlite::Error> {
+pub fn read(key: SettingKey) -> Result<Setting> {
     let db = open_connection()?;
 
     let (sql, values) = Query::select()
@@ -88,7 +91,7 @@ pub fn read(key: SettingKey) -> Result<Setting, rusqlite::Error> {
     Ok(rows.next()?.map(Setting::from).unwrap())
 }
 
-pub fn update(arg: &SettingToUpdate) -> Result<usize, Error> {
+pub fn update(arg: &SettingToUpdate) -> Result<usize> {
     let db = open_connection()?;
 
     match arg.key {
