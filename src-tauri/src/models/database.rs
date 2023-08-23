@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use rusqlite::{Connection, Result};
 use sea_query::{
     ColumnDef, Expr, ForeignKey, ForeignKeyAction, Iden, Index, Query, SqliteQueryBuilder, Table,
@@ -36,13 +38,11 @@ pub enum Settings {
     Value,
 }
 
-pub fn open_connection() -> Result<Connection> {
-    Connection::open("collie.db")
+pub fn open_connection(path: &Path) -> Result<Connection> {
+    Connection::open(path.join("collie.db"))
 }
 
-pub fn migrate() -> Result<()> {
-    let db = open_connection()?;
-
+pub fn migrate(db: &Connection) -> Result<()> {
     let create_table_feeds = Table::create()
         .table(Feeds::Table)
         .if_not_exists()

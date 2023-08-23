@@ -1,4 +1,5 @@
 use chrono::Utc;
+use rusqlite::Connection;
 
 use crate::models::feeds::FeedStatus;
 use crate::syndication::RawItem;
@@ -10,33 +11,36 @@ use crate::{
     syndication::fecth_feed_items,
 };
 
-pub fn create_new_items() -> Vec<ItemToCreate> {
-    let pairs = get_links_to_check();
+pub fn create_new_items(db: &Connection) -> Vec<ItemToCreate> {
+    let pairs = get_links_to_check(db);
 
     let mut inserted = vec![];
     for (feed, link) in pairs {
         if let Ok(items) = fecth_feed_items(&link) {
-            inserted.extend(insert_new_items(feed, &items));
+            inserted.extend(insert_new_items(db, feed, &items));
         };
     }
 
     inserted
 }
 
-fn get_links_to_check() -> Vec<(i32, String)> {
-    if let Ok(feeds) = feeds::read_all() {
+fn get_links_to_check(db: &Connection) -> Vec<(i32, String)> {
+    if let Ok(feeds) = feeds::read_all(db) {
         let current = Utc::now().fixed_offset();
         let filtered = feeds.iter().filter(|x| x.status == FeedStatus::Subscribed);
 
         filtered
             .map(|x| {
-                let _ = feeds::update(&FeedToUpdate {
-                    id: x.id,
-                    title: None,
-                    link: None,
-                    status: None,
-                    checked_at: Some(current),
-                });
+                let _ = feeds::update(
+                    db,
+                    &FeedToUpdate {
+                        id: x.id,
+                        title: None,
+                        link: None,
+                        status: None,
+                        checked_at: Some(current),
+                    },
+                );
                 (x.id, x.link.clone())
             })
             .collect()
@@ -45,7 +49,7 @@ fn get_links_to_check() -> Vec<(i32, String)> {
     }
 }
 
-fn insert_new_items(feed: i32, items: &[RawItem]) -> Vec<ItemToCreate> {
+fn insert_new_items(db: &Connection, feed: i32, items: &[RawItem]) -> Vec<ItemToCreate> {
     let current = Utc::now().fixed_offset();
 
     let args = items.iter().map(|x| ItemToCreate {
@@ -65,7 +69,7 @@ fn insert_new_items(feed: i32, items: &[RawItem]) -> Vec<ItemToCreate> {
 
     let mut inserted = vec![];
     for arg in args {
-        if items::create(&arg).is_ok() {
+        if items::create(db, &arg).is_ok() {
             inserted.push(arg);
         }
     }

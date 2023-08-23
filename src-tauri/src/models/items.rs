@@ -2,7 +2,7 @@ use core::fmt::{self, Display, Formatter};
 use std::str::FromStr;
 
 use chrono::{DateTime, FixedOffset};
-use rusqlite::Row;
+use rusqlite::{Connection, Row};
 use sea_query::{Alias, Expr, Func, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
@@ -10,7 +10,7 @@ use sha1_smol::Sha1;
 
 use crate::error::{Error, Result};
 
-use super::database::{open_connection, Feeds, Items};
+use super::database::{Feeds, Items};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum ItemStatus {
@@ -117,9 +117,7 @@ pub struct ItemReadOption {
     pub offset: Option<u64>,
 }
 
-pub fn create(arg: &ItemToCreate) -> Result<usize> {
-    let db = open_connection()?;
-
+pub fn create(db: &Connection, arg: &ItemToCreate) -> Result<usize> {
     let (sql, values) = Query::insert()
         .into_table(Items::Table)
         .columns([
@@ -147,9 +145,7 @@ pub fn create(arg: &ItemToCreate) -> Result<usize> {
     Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }
 
-pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
-    let db = open_connection()?;
-
+pub fn read_all(db: &Connection, opt: ItemReadOption) -> Result<Vec<Item>> {
     let mut query = Query::select()
         .columns([
             (Items::Table, Items::Id),
@@ -210,9 +206,7 @@ pub fn read_all(opt: ItemReadOption) -> Result<Vec<Item>> {
     Ok(rows.map(|x| x.unwrap()).collect::<Vec<Item>>())
 }
 
-pub fn count_all(opt: ItemReadOption) -> Result<i64> {
-    let db = open_connection()?;
-
+pub fn count_all(db: &Connection, opt: ItemReadOption) -> Result<i64> {
     let mut query = Query::select()
         .from(Items::Table)
         .expr(Func::count(Expr::col(Items::Id)))
@@ -241,9 +235,7 @@ pub fn count_all(opt: ItemReadOption) -> Result<i64> {
     })
 }
 
-pub fn update(arg: ItemToUpdate) -> Result<usize> {
-    let db = open_connection()?;
-
+pub fn update(db: &Connection, arg: ItemToUpdate) -> Result<usize> {
     let mut vals = vec![];
 
     if let Some(status) = arg.status {

@@ -5,14 +5,14 @@ use std::{
 };
 
 use chrono::{DateTime, FixedOffset, Utc};
-use rusqlite::Row;
+use rusqlite::{Connection, Row};
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
 
-use super::database::{open_connection, Feeds};
+use super::database::Feeds;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum FeedStatus {
@@ -80,9 +80,7 @@ pub struct FeedToUpdate {
     pub checked_at: Option<DateTime<FixedOffset>>,
 }
 
-pub fn create(arg: FeedToCreate) -> Result<usize> {
-    let db = open_connection()?;
-
+pub fn create(db: &Connection, arg: FeedToCreate) -> Result<usize> {
     let (sql, values) = Query::insert()
         .into_table(Feeds::Table)
         .columns([Feeds::Title, Feeds::Link, Feeds::CheckedAt])
@@ -92,9 +90,7 @@ pub fn create(arg: FeedToCreate) -> Result<usize> {
     Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }
 
-pub fn read_all() -> Result<Vec<Feed>> {
-    let db = open_connection()?;
-
+pub fn read_all(db: &Connection) -> Result<Vec<Feed>> {
     let (sql, values) = Query::select()
         .columns([
             Feeds::Id,
@@ -112,9 +108,7 @@ pub fn read_all() -> Result<Vec<Feed>> {
     Ok(rows.map(|x| x.unwrap()).collect::<Vec<Feed>>())
 }
 
-pub fn read(id: i32) -> Result<Option<Feed>> {
-    let db = open_connection()?;
-
+pub fn read(db: &Connection, id: i32) -> Result<Option<Feed>> {
     let (sql, values) = Query::select()
         .columns([
             Feeds::Id,
@@ -134,9 +128,7 @@ pub fn read(id: i32) -> Result<Option<Feed>> {
     Ok(rows.next()?.map(Feed::from))
 }
 
-pub fn update(arg: &FeedToUpdate) -> Result<usize> {
-    let db = open_connection()?;
-
+pub fn update(db: &Connection, arg: &FeedToUpdate) -> Result<usize> {
     let mut vals = vec![];
 
     if let Some(title) = &arg.title {
@@ -164,9 +156,7 @@ pub fn update(arg: &FeedToUpdate) -> Result<usize> {
     Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }
 
-pub fn delete(id: i32) -> Result<usize> {
-    let db = open_connection()?;
-
+pub fn delete(db: &Connection, id: i32) -> Result<usize> {
     let (sql, values) = Query::delete()
         .from_table(Feeds::Table)
         .and_where(Expr::col(Feeds::Id).eq(id))

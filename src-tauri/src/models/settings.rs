@@ -4,14 +4,14 @@ use std::{
     str::FromStr,
 };
 
-use rusqlite::Row;
+use rusqlite::{Connection, Row};
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
 
-use super::database::{open_connection, Settings};
+use super::database::Settings;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum SettingKey {
@@ -61,9 +61,7 @@ pub struct SettingToUpdate {
     pub value: String,
 }
 
-pub fn read_all() -> Result<Vec<Setting>> {
-    let db = open_connection()?;
-
+pub fn read_all(db: &Connection) -> Result<Vec<Setting>> {
     let (sql, values) = Query::select()
         .columns([Settings::Key, Settings::Value])
         .from(Settings::Table)
@@ -75,9 +73,7 @@ pub fn read_all() -> Result<Vec<Setting>> {
     Ok(rows.map(|x| x.unwrap()).collect::<Vec<Setting>>())
 }
 
-pub fn read(key: SettingKey) -> Result<Setting> {
-    let db = open_connection()?;
-
+pub fn read(db: &Connection, key: SettingKey) -> Result<Setting> {
     let (sql, values) = Query::select()
         .columns([Settings::Key, Settings::Value])
         .from(Settings::Table)
@@ -91,9 +87,7 @@ pub fn read(key: SettingKey) -> Result<Setting> {
     Ok(rows.next()?.map(Setting::from).unwrap())
 }
 
-pub fn update(arg: &SettingToUpdate) -> Result<usize> {
-    let db = open_connection()?;
-
+pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
     match arg.key {
         SettingKey::PollingFrequency => {
             if arg.value.parse::<i32>().map(|x| x < 30).unwrap_or(false) {
