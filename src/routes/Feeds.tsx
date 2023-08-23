@@ -1,4 +1,5 @@
 import { confirm } from '@tauri-apps/api/dialog';
+import { A } from '@solidjs/router';
 import { createSignal, For, Match, onMount, Switch } from "solid-js";
 
 import dayjs from 'dayjs';
@@ -77,6 +78,10 @@ function Feeds() {
           <li class={`${feed.status == api.FeedStatus.UNSUBSCRIBED ? "lowp" : ""}`}>
             <div class="row">
               <Switch>
+                <Match when={feed.id !== idToUpdate()}>
+                  <strong><A href={`/feeds/${feed.id}`}>{feed.title}</A></strong>
+                  <button onClick={() => setIdToUpdate(feed.id)}>Edit</button>
+                </Match>
                 <Match when={feed.id === idToUpdate()}>
                   <input type="text" value={feed.title}
                     onInput={(e) => setTitleToUpdate(e.currentTarget.value)} />
@@ -84,14 +89,13 @@ function Feeds() {
                     onInput={(e) => setLinkToUpdate(e.currentTarget.value)} />
                   <button onClick={() => updateFeed(feed.id)}>Apply</button>
                 </Match>
-                <Match when={feed.id !== idToUpdate()}>
-                  <strong><a href={feed.link} target="_blank">{feed.title}</a></strong>
-                  <button onClick={() => setIdToUpdate(feed.id)}>Edit</button>
-                </Match>
               </Switch>
             </div>
             <small>
-              <span class="sep">Last checked at</span> <span title={dayjs(feed.checked_at).tz(dayjs.tz.guess()).format()}>{dayjs(feed.checked_at).fromNow()}</span>
+              <span class="sep">Last checked at </span>
+              <span title={dayjs(feed.checked_at).tz(dayjs.tz.guess()).format()}>
+                {dayjs(feed.checked_at).fromNow()}</span>
+              <span class="sep"> | </span> <a href={feed.link} target="_blank">Raw</a>
               <span class="sep"> | </span>
               <Switch>
                 <Match when={feed.status === api.FeedStatus.SUBSCRIBED}>

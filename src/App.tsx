@@ -1,17 +1,14 @@
-import { lazy, createSignal } from "solid-js";
-import {A, Route, Routes} from "@solidjs/router";
+import { lazy } from "solid-js";
+import { A, Route, Routes } from "@solidjs/router";
 
 import "./App.css";
-import { ItemStatus } from "./api/items";
-import {ItemType} from "./routes/Items";
+import { ItemType } from "./routes/Items";
 
 const Items = lazy(() => import("./routes/Items"));
 const Feeds = lazy(() => import("./routes/Feeds"));
 const Settings = lazy(() => import("./routes/Settings"));
 
 function App() {
-  const [route, setRoute] = createSignal(ItemStatus.UNREAD);
-
   return (
     <div class="container">
       <div class="navigation row">
@@ -27,6 +24,7 @@ function App() {
         <Route path="/unread" element={<Items type={ItemType.UNREAD} />} />
         <Route path="/saved" element={<Items type={ItemType.SAVED} />} />
         <Route path="/feeds" component={Feeds} />
+        <Route path="/feeds/:id" element={<Items type={ItemType.FEED} />} />
         <Route path="/settings" component={Settings} />
       </Routes>
     </div>

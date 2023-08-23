@@ -34,6 +34,14 @@ pub fn read_all_feeds() -> Result<Vec<Feed>, String> {
 }
 
 #[tauri::command]
+pub fn read_feed(id: i32) -> Result<Option<Feed>, String> {
+    match feeds::read(id) {
+        Ok(feed) => Ok(feed),
+        Err(err) => Err(err.to_string()),
+    }
+}
+
+#[tauri::command]
 pub fn update_feed(arg: FeedToUpdate) -> Result<String, String> {
     match feeds::update(&arg) {
         Ok(_) => Ok("Feed updated".to_string()),

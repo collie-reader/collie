@@ -48,7 +48,17 @@ export async function readAllFeeds(): Promise<Feed[]> {
     // Do nothing
   }
 
-  return  [];
+  return [];
+}
+
+export async function readFeed(id: number): Promise<Feed | null> {
+  try {
+    return invoke("read_feed", { id });
+  } catch (e) {
+    // Do nothing
+  }
+
+  return null;
 }
 
 export async function deleteFeed(id: number) {

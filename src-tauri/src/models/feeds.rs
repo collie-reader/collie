@@ -110,6 +110,28 @@ pub fn read_all() -> Result<Vec<Feed>> {
     Ok(rows.map(|x| x.unwrap()).collect::<Vec<Feed>>())
 }
 
+pub fn read(id: i32) -> Result<Option<Feed>> {
+    let db = open_connection()?;
+
+    let (sql, values) = Query::select()
+        .columns([
+            Feeds::Id,
+            Feeds::Title,
+            Feeds::Link,
+            Feeds::Status,
+            Feeds::CheckedAt,
+        ])
+        .from(Feeds::Table)
+        .and_where(Expr::col(Feeds::Id).eq(id))
+        .limit(1)
+        .build_rusqlite(SqliteQueryBuilder);
+
+    let mut stmt = db.prepare(sql.as_str())?;
+    let mut rows = stmt.query(&*values.as_params())?;
+
+    Ok(rows.next()?.map(Feed::from))
+}
+
 pub fn update(arg: &FeedToUpdate) -> Result<usize> {
     let db = open_connection()?;
 

@@ -23,6 +23,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::feeds::create_feed,
             commands::feeds::read_all_feeds,
+            commands::feeds::read_feed,
             commands::feeds::update_feed,
             commands::feeds::delete_feed,
             commands::items::read_all_items,
