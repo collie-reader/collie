@@ -1,6 +1,7 @@
 import { listen } from '@tauri-apps/api/event';
 import { A, useParams } from '@solidjs/router';
-import { createSignal, For, JSX, Match, onMount, Show, Switch } from "solid-js";
+import { createSignal, For, Match, onMount, Show, Switch } from "solid-js";
+import DOMPurify from 'dompurify';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -30,50 +31,20 @@ function Items(props: Props) {
   const params = useParams();
 
   const [offset, setOffset] = createSignal(0);
-
-  const option = (): api.ItemReadOption => {
-    let opt = { offset: offset(), limit: LIMIT };
-
-    switch (props.type) {
-      case ItemType.INBOX:
-        return opt;
-      case ItemType.UNREAD:
-        return { ...opt, status: api.ItemStatus.UNREAD };
-      case ItemType.SAVED:
-        return { ...opt, is_saved: true };
-      case ItemType.FEED:
-        return { ...opt, feed: Number(params.id) };
-    }
-  };
-
-  const [opt, setOpt] = createSignal<api.ItemReadOption>(option());
+  const [opt, setOpt] = createSignal<api.ItemReadOption>({});
   const [feed, setFeed] = createSignal<feedApi.Feed | null>(null);
   const [items, setItems] = createSignal<api.Item[]>([]);
   const [selectedItem, setSelectedItem] = createSignal<api.Item | null>(null);
   const [count, setCount] = createSignal(0);
 
-  const title = (): JSX.Element => {
-    switch (props.type) {
-      case ItemType.INBOX:
-      case ItemType.UNREAD:
-      case ItemType.SAVED:
-        return <h2>{`${props.type.valueOf()} (${count()})`}</h2>;
-      case ItemType.FEED:
-        return <h2>
-          <a onClick={() => history.back()}>←</a>
-          <span> {`${feed() ? feed()?.title : 'Feed'} (${count()})`}</span>
-        </h2>;
-    }
-  };
-
   const loadItems = async () => {
-    const [count, items] = await Promise.all([
+    const [fetchedCount, fetchedItems] = await Promise.all([
       api.countItems(opt()),
       api.readItems(opt()),
     ]);
 
-    setCount(count);
-    setItems(items);
+    setCount(fetchedCount);
+    setItems(fetchedItems);
   };
 
   const loadPage = async (newOffset: number) => {
@@ -101,27 +72,48 @@ function Items(props: Props) {
   };
 
   onMount(async () => {
+    let initialOpt = { offset: 0, limit: LIMIT };
+    switch (props.type) {
+      case ItemType.INBOX:
+        setOpt(initialOpt);
+        break;
+      case ItemType.UNREAD:
+        setOpt({ ...initialOpt, status: api.ItemStatus.UNREAD });
+        break;
+      case ItemType.SAVED:
+        setOpt({ ...initialOpt, is_saved: true });
+        break;
+      case ItemType.FEED:
+        setOpt({ ...initialOpt, feed: Number(params.id) });
+    }
+
     if (props.type === ItemType.FEED) {
-      const [feed] = await Promise.all([
+      const [fetchedFeed] = await Promise.all([
         feedApi.readFeed(Number(params.id)),
         loadItems(),
       ]);
 
-      setFeed(feed);
+      setFeed(fetchedFeed);
     } else {
       await loadItems();
     }
   });
 
-  listen('feed_updated', async () => {
-    await loadItems();
-  });
+  // eslint-disable-next-line solid/reactivity
+  listen('feed_updated', async () => loadItems());
 
   return (
     <div class="container">
       <div class="row">
         <div class="item-list">
-          {title()}
+          <Switch fallback={<h2>{`${props.type.valueOf()} (${count()})`}</h2>}>
+            <Match when={props.type == ItemType.FEED}>
+              <h2>
+                <a onClick={() => history.back()}>←</a>
+                <span> {`${feed() ? feed()?.title : 'Feed'} (${count()})`}</span>
+              </h2>;
+            </Match>
+          </Switch>
           <ul>
             <For each={items()}>{(item: api.Item) =>
               <li class={`${item.status == api.ItemStatus.READ ? "lowp" : ""}`}>
@@ -163,7 +155,8 @@ function Items(props: Props) {
           <div class="item-viewer-container">
             <div class="item-viewer">
               <h3>{selectedItem()?.title}</h3>
-              <div innerHTML={selectedItem()?.description} />
+              {/* eslint-disable-next-line solid/no-innerhtml*/}
+              <div innerHTML={DOMPurify.sanitize(selectedItem()?.description ?? "")} />
             </div>
           </div>
         </Show>

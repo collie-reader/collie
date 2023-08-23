@@ -49,7 +49,7 @@ function Feeds() {
   };
 
   const deleteFeed = async (feed: api.Feed) => {
-    if (await confirm(`A feed \"${feed.title}\" and their all items will be deleted. Are you sure?`)) {
+    if (await confirm(`A feed "${feed.title}" and their all items will be deleted. Are you sure?`)) {
       await api.deleteFeed(feed.id);
       setFeeds(await api.readAllFeeds());
     }
