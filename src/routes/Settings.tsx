@@ -34,7 +34,7 @@ function Settings() {
   const update = async (key: api.SettingKey, value: string) => {
     switch (key) {
       case api.SettingKey.POLLING_FREQUENCY:
-        if (validate(key, value)) {
+        if (!validate(key, value)) {
           setNewSettings({ ...newSettings(), [api.SettingKey.POLLING_FREQUENCY]: "30" })
           return;
         }
