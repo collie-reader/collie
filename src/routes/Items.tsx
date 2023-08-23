@@ -14,13 +14,7 @@ dayjs.extend(timezone);
 import "../styles/Items.css";
 import * as api from "../api/items";
 import * as feedApi from "../api/feeds";
-
-export enum ItemType {
-  INBOX = "Inbox",
-  UNREAD = "Unread",
-  SAVED = "Saved",
-  FEED = "Feed",
-}
+import { ItemType } from './models/items';
 
 interface Props {
   type: ItemType;

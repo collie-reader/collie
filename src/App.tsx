@@ -2,7 +2,7 @@ import { lazy } from "solid-js";
 import { A, Route, Routes } from "@solidjs/router";
 
 import "./App.css";
-import { ItemType } from "./routes/Items";
+import { ItemType } from "./routes/models/items";
 
 const Items = lazy(() => import("./routes/Items"));
 const Feeds = lazy(() => import("./routes/Feeds"));
