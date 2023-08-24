@@ -8,6 +8,7 @@ function Settings() {
   const [newSettings, setNewSettings] = createSignal<{ [key in api.SettingKey]: string }>({
     [api.SettingKey.POLLING_FREQUENCY]: "",
     [api.SettingKey.NOTIFICATION]: "",
+    [api.SettingKey.DB_SCHEME_VERSION]: "",
   });
 
   const keyToText = (key: api.SettingKey) => {
@@ -16,6 +17,8 @@ function Settings() {
         return "Polling frequency";
       case api.SettingKey.NOTIFICATION:
         return "Notification";
+      default:
+        return "";
     }
   }
 

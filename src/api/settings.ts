@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 export enum SettingKey {
   POLLING_FREQUENCY = "PollingFrequency",
   NOTIFICATION = "Notification",
+  DB_SCHEME_VERSION = "DB Scheme Version",
 }
 
 export interface Setting {

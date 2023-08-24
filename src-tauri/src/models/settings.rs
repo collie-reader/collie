@@ -17,6 +17,7 @@ use super::database::Settings;
 pub enum SettingKey {
     PollingFrequency, // seconds
     Notification,
+    DbSchemeVersion,
 }
 
 impl Display for SettingKey {
@@ -24,6 +25,7 @@ impl Display for SettingKey {
         match self {
             SettingKey::PollingFrequency => write!(f, "polling_frequency"),
             SettingKey::Notification => write!(f, "notification"),
+            SettingKey::DbSchemeVersion => write!(f, "db_scheme_version"),
         }
     }
 }
@@ -35,6 +37,7 @@ impl FromStr for SettingKey {
         match x {
             "polling_frequency" => Ok(SettingKey::PollingFrequency),
             "notification" => Ok(SettingKey::Notification),
+            "db_scheme_version" => Ok(SettingKey::DbSchemeVersion),
             _ => Err(Error::InvalidEnumKey(
                 x.to_string(),
                 "SettingKey".to_string(),
@@ -102,6 +105,7 @@ pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
                 return Err(Error::Unknown);
             }
         }
+        SettingKey::DbSchemeVersion => return Err(Error::Forbidden),
     }
 
     let (sql, values) = Query::update()

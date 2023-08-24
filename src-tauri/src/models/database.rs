@@ -141,7 +141,7 @@ pub fn migrate(db: &Connection) -> Result<()> {
         .join(";"),
     )?;
 
-    let _ = insert_settings(db, "version", "1");
+    let _ = insert_settings(db, "db_scheme_version", "1");
     let _ = insert_settings(db, "polling_frequency", "120");
     let _ = insert_settings(db, "notification", "1");
 

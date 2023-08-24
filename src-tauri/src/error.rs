@@ -6,6 +6,9 @@ pub enum Error {
     #[error("invalid key `{0}` for `{1}`")]
     InvalidEnumKey(String, String),
 
+    #[error("forbidden")]
+    Forbidden,
+
     #[error("unknown")]
     Unknown,
 
