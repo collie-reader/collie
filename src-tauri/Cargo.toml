@@ -1,10 +1,10 @@
 [package]
 name = "collie"
-version = "0.0.0"
+version = "0.1.0"
 description = "A minimal RSS reader just for you"
 authors = ["parksb <parkgds@gmail.com>"]
-license = ""
-repository = ""
+license = "GPL-3.0"
+repository = "https://github.com/parksb/collie"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

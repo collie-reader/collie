@@ -1,7 +1,7 @@
 {
   "name": "collie",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "A minimal RSS reader just for you",
   "scripts": {
     "start": "vite",
     "dev": "vite",
@@ -10,7 +10,7 @@
     "lint": "eslint --ext .ts,.tsx --ignore-path=.gitignore src/",
     "tauri": "tauri"
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "dependencies": {
     "@solidjs/router": "^0.8.3",
     "@tauri-apps/api": "^1.4.0",
