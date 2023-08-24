@@ -1,20 +1,20 @@
 # Collie
 
-<img src="src-tauri/icons/icon.png" width="128px" height="128px" />
+![](https://user-images.githubusercontent.com/6410412/263000117-70fdfe41-18cf-472a-a038-59d39d8b6e20.png)
 
 Collie is a minimal RSS feed reader application running on your desktop. With Collie, you can:
 
 - subscribe to multiple RSS/Atom feeds to organize your own news feed.
-- receive a real-time notification when a new item is added to the subscribed feed.
-- save the items to read again or later.
+- receive a real-time notification when a new item is added to the subscribed feed. (By default, it is checked every two minutes.)
+- and save the items to read again or later.
 
-All you need is a local machine and the Internet. No virtual machine, cloud infrastructures, always-on database, or account registration are required.
+All you need is a local machine and the Internet. No virtual machine, no cloud infrastructures, no always-on database, and no account registration with privacy information required.
 
 Collie is heavily inspired by [Miniflux](https://miniflux.app/) and [RSS app for Slack](https://gdgkr.slack.com/apps/A0F81R7U7-rss).
 
 ## Installation
 
-Download the latest release for your system from [release page](https://github.com/parksb/collie/releases).
+Download the latest release for your system from [release page](https://github.com/parksb/collie/releases). Collie provides `.exe`/`.msi` files for Windows, `.app`/`.dmg` files for macOS, and `.deb`/`.AppImage` files for Linux.
 
 ## Build
 
