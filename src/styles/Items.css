@@ -2,7 +2,12 @@ div.items-page div.item-list {
   width: 100%;
 }
 
+div.items-page div.item-list div.controls-container {
+  margin-bottom: 1rem;
+}
+
 div.items-page div.item-list > ul {
+  margin: 0;
   padding: 0;
   list-style: none;
 }

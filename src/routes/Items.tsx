@@ -109,12 +109,12 @@ function Items(props: Props) {
               </h2>
             </Match>
           </Switch>
-          <div class="block">
-            <Show when={items().length}>
+          <Show when={items().length && items().some(x => x.status == api.ItemStatus.UNREAD)}>
+            <div class="block controls-container">
               <button onClick={() => markAs(items(), api.ItemStatus.READ)}>
                 Mark this page as read</button>
-            </Show>
-          </div>
+            </div>
+          </Show>
           <ul>
             <For each={items()}>{(item: api.Item) =>
               <li class={`${item.status == api.ItemStatus.READ ? "lowp" : ""} ${(selectedItem() && selectedItem()?.id == item.id) ? "selected" : ""}`}>
