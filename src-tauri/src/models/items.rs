@@ -180,6 +180,7 @@ pub fn read_all(db: &Connection, opt: ItemReadOption) -> Result<Vec<Item>> {
             Feeds::Table,
             Expr::col((Items::Table, Items::Feed)).equals((Feeds::Table, Feeds::Id)),
         )
+        .order_by((Items::Table, Items::Id), Order::Desc)
         .order_by(Items::PublishedAt, Order::Desc)
         .to_owned();
 
