@@ -161,7 +161,8 @@ function Items(props: Props) {
             <div class="item-viewer">
               <h3>{selectedItem()?.title}</h3>
               {/* eslint-disable-next-line solid/no-innerhtml*/}
-              <div innerHTML={DOMPurify.sanitize(selectedItem()?.description ?? "")} />
+              <div innerHTML={DOMPurify.sanitize(selectedItem()?.description ?? "")
+                .replace(/href="http(s?).*"/g, "target=\"_blank\" $&")} />
             </div>
           </div>
         </Show>
