@@ -28,7 +28,7 @@ pub struct DbState {
 }
 
 fn main() {
-    let app = tauri::Builder::default()
+    let _ = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             commands::feeds::create_feed,
             commands::feeds::read_all_feeds,
@@ -42,26 +42,22 @@ fn main() {
             commands::settings::read_all_settings,
             commands::settings::update_setting,
         ])
-        .build(tauri::generate_context!("tauri.conf.json"))
-        .expect("error while running tauri application");
+        .setup(|app| {
+            let app_data_dir = app.handle().path_resolver().app_data_dir().unwrap();
+            fs::create_dir_all(&app_data_dir).unwrap();
+            let db = models::database::open_connection(&app_data_dir).unwrap();
+            let _ = models::database::migrate(&db);
 
-    let app_data_dir = app.handle().path_resolver().app_data_dir().unwrap();
-    fs::create_dir_all(&app_data_dir).unwrap();
-    let db = models::database::open_connection(&app_data_dir).unwrap();
-    let _ = models::database::migrate(&db);
+            app.manage(DbState { db: Mutex::new(db) });
+            worker::start(app);
 
-    worker::start(&app);
-
-    app.manage(DbState { db: Mutex::new(db) });
-    app.run(move |handle, event| {
-        if let tauri::RunEvent::WindowEvent {
-            label: _,
-            event: tauri::WindowEvent::CloseRequested { api, .. },
-            ..
-        } = event
-        {
-            let _ = handle.hide();
-            api.prevent_close();
-        }
-    });
+            Ok(())
+        })
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
+                api.prevent_close();
+                let _ = event.window().app_handle().hide();
+            }
+        })
+        .run(tauri::generate_context!("tauri.conf.json"));
 }
