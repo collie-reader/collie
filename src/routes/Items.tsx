@@ -145,7 +145,7 @@ function Items(props: Props) {
             }</For>
           </ul>
           <div class="row">
-            <Show when={offset() > 2}>
+            <Show when={offset() > 1}>
               <button onClick={() => loadPage(0)}>←← 1</button>
             </Show>
             <Show when={offset() > 0}>
