@@ -1,17 +1,17 @@
-form > input {
+div.feeds-page form > input {
   width: 250px;
 }
 
-ul.feed-list {
+div.feeds-page ul.feed-list {
   padding: 0;
   list-style: none;
 }
 
-ul.feed-list > li {
+div.feeds-page ul.feed-list > li {
   margin-bottom: .5rem;
 }
 
-ul.feed-list > li > small {
+div.feeds-page ul.feed-list > li > small {
   display: block;
   font-size: .8rem;
   margin-top: -3px;

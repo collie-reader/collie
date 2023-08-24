@@ -60,7 +60,7 @@ function Feeds() {
   });
 
   return (
-    <div class="container">
+    <div class="feeds-page container">
       <h2>Feeds</h2>
       <form
         class="row"

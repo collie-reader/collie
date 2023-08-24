@@ -1,36 +1,43 @@
-div.item-list {
+div.items-page div.item-list {
   width: 100%;
 }
 
-div.item-list > ul {
-  margin: 0;
+div.items-page div.item-list > ul {
   padding: 0;
   list-style: none;
 }
 
-div.item-list > ul > li {
+div.items-page div.item-list > ul > li {
   margin-bottom: .5rem;
 }
 
-div.item-list > ul > li > small {
+div.items-page div.item-list > ul > li.selected {
+  background-color: yellow;
+}
+
+div.items-page div.item-list > ul > li > small {
   display: block;
   font-size: .8rem;
   margin-top: -3px;
 }
 
-div.item-list {
+div.items-page div.item-list {
   padding-right: 1rem;
 }
 
-div.item-viewer-container {
+div.items-page div.item-viewer-container {
   width: 25vw;
   border-left: 1px #9f9f9f solid;
   padding-left: 1rem;
 }
 
-div.item-viewer {
+div.items-page div.item-viewer {
   position: sticky;
   overflow-wrap: break-word;
   width: 25vw;
   top: 0;
+}
+
+div.items-page div.item-viewer img {
+  width: 100%;
 }

@@ -14,6 +14,10 @@ div {
   flex-direction: column;
 }
 
+div.block {
+  display: block;
+}
+
 .row {
   flex-direction: row;
 }

@@ -58,9 +58,9 @@ function Items(props: Props) {
     await loadItems();
   }
 
-  const markAs = async (id: number, status: api.ItemStatus) => {
+  const markAs = async (ids: number[], status: api.ItemStatus) => {
     if (status !== opt().status) {
-      await api.markAs(id, status);
+      await api.markAs(ids, status);
       await loadItems();
     }
   };
@@ -97,7 +97,7 @@ function Items(props: Props) {
   listen('feed_updated', async () => loadItems());
 
   return (
-    <div class="container">
+    <div class="items-page container">
       <div class="row">
         <div class="item-list">
           <Switch fallback={<h2>{`${props.type.valueOf()} (${count()})`}</h2>}>
@@ -108,11 +108,17 @@ function Items(props: Props) {
               </h2>
             </Match>
           </Switch>
+          <div class="block">
+            <Show when={items().length}>
+              <button onClick={() => markAs(items().map(x => x.id), api.ItemStatus.READ)}>
+                Mark this page as read</button>
+            </Show>
+          </div>
           <ul>
             <For each={items()}>{(item: api.Item) =>
-              <li class={`${item.status == api.ItemStatus.READ ? "lowp" : ""}`}>
+              <li class={`${item.status == api.ItemStatus.READ ? "lowp" : ""} ${(selectedItem() && selectedItem()?.id == item.id) ? "selected" : ""}`}>
                 <strong><a href={item.link} target="_blank"
-                  onClick={() => markAs(item.id, api.ItemStatus.READ)}>{item.title}</a></strong>
+                  onClick={() => markAs([item.id], api.ItemStatus.READ)}>{item.title}</a></strong>
                 <small class="row">
                   <span class="sep">on</span> <A href={`/feeds/${item.feed.id}`}>{item.feed.title}</A>
                   <span class="sep"> by</span> {item.author}
@@ -127,14 +133,14 @@ function Items(props: Props) {
                   <span class="sep"> | </span>
                   <button onClick={() => {
                     setSelectedItem(item);
-                    markAs(item.id, api.ItemStatus.READ)
-                  }}>More</button>
+                    markAs([item.id], api.ItemStatus.READ)
+                  }}>Read</button>
                 </small>
               </li>
             }</For>
           </ul>
           <div class="row">
-            <Show when={offset() > 3}>
+            <Show when={offset() > 2}>
               <button onClick={() => loadPage(0)}>←← 1</button>
             </Show>
             <Show when={offset() > 0}>

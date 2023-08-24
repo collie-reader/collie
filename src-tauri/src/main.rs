@@ -38,6 +38,7 @@ fn main() {
             commands::items::read_all_items,
             commands::items::count_all_items,
             commands::items::update_item,
+            commands::items::update_items,
             commands::settings::read_all_settings,
             commands::settings::update_setting,
         ])

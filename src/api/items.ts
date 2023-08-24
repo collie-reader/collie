@@ -40,7 +40,14 @@ export interface ItemToUpdate {
   is_saved?: boolean | null,
 }
 
+export interface ItemToUpdateAll {
+  status?: ItemStatus | null,
+  is_saved?: boolean | null,
+  option: ItemReadOption,
+}
+
 export interface ItemReadOption {
+  ids?: number[] | null,
   feed?: number | null,
   status?: ItemStatus | null,
   is_saved?: boolean | null,
@@ -84,9 +91,13 @@ export async function unsave(id: number) {
   }
 }
 
-export async function markAs(id: number, status: ItemStatus) {
+export async function markAs(ids: number[], status: ItemStatus) {
   try {
-    await invoke("update_item", { arg: { id, status } });
+    if (ids.length === 1) {
+      await invoke("update_item", { arg: { id: ids[0], status } });
+    } else if (ids.length > 1) {
+      await invoke("update_items", { arg: { opt: { ids }, status } });
+    }
   } catch (e) {
     // Do nothing
   }

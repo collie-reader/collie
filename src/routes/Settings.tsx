@@ -64,7 +64,7 @@ function Settings() {
   });
 
   return (
-    <div class="container">
+    <div class="settings-page container">
       <h2>Settings</h2>
       <ul class="setting-list">
         <For each={settings()}>{(setting) =>

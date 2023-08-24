@@ -1,7 +1,7 @@
 use tauri::State;
 
 use crate::{
-    models::items::{self, Item, ItemReadOption, ItemToUpdate},
+    models::items::{self, Item, ItemReadOption, ItemToUpdate, ItemToUpdateAll},
     DbState,
 };
 
@@ -28,6 +28,15 @@ pub fn update_item(db_state: State<DbState>, arg: ItemToUpdate) -> Result<String
     let db = db_state.db.lock().unwrap();
     match items::update(&db, arg) {
         Ok(_) => Ok("Item updated".to_string()),
+        Err(err) => Err(err.to_string()),
+    }
+}
+
+#[tauri::command]
+pub fn update_items(db_state: State<DbState>, arg: ItemToUpdateAll) -> Result<String, String> {
+    let db = db_state.db.lock().unwrap();
+    match items::update_all(&db, arg) {
+        Ok(_) => Ok("Items updated".to_string()),
         Err(err) => Err(err.to_string()),
     }
 }

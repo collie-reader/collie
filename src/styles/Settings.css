@@ -1,19 +1,20 @@
-ul.setting-list {
+div.settings-page ul.setting-list {
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
-ul.setting-list > li {
+div.settings-page ul.setting-list > li {
   margin-bottom: .5rem;
 }
 
-ul.setting-list > li > small {
+div.settings-page ul.setting-list > li > small {
   display: block;
   font-size: .8rem;
   margin-top: -3px;
 }
 
-label, button {
+div.settings-page label,
+div.settings-page button {
   margin-left: 5px;
 }
