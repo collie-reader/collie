@@ -58,8 +58,9 @@ function Items(props: Props) {
     await loadItems();
   }
 
-  const markAs = async (ids: number[], status: api.ItemStatus) => {
-    if (status !== opt().status) {
+  const markAs = async (targets: api.Item[], status: api.ItemStatus) => {
+    const ids = targets.filter(x => x.status !== status).map(x => x.id);
+    if (ids.length) {
       await api.markAs(ids, status);
       await loadItems();
     }
@@ -110,7 +111,7 @@ function Items(props: Props) {
           </Switch>
           <div class="block">
             <Show when={items().length}>
-              <button onClick={() => markAs(items().map(x => x.id), api.ItemStatus.READ)}>
+              <button onClick={() => markAs(items(), api.ItemStatus.READ)}>
                 Mark this page as read</button>
             </Show>
           </div>
@@ -118,13 +119,17 @@ function Items(props: Props) {
             <For each={items()}>{(item: api.Item) =>
               <li class={`${item.status == api.ItemStatus.READ ? "lowp" : ""} ${(selectedItem() && selectedItem()?.id == item.id) ? "selected" : ""}`}>
                 <strong><a href={item.link} target="_blank"
-                  onClick={() => markAs([item.id], api.ItemStatus.READ)}>{item.title}</a></strong>
+                  onClick={() => markAs([item], api.ItemStatus.READ)}>{item.title}</a></strong>
                 <small class="row">
                   <span class="sep">on</span> <A href={`/feeds/${item.feed.id}`}>{item.feed.title}</A>
                   <span class="sep"> by</span> {item.author}
                   <span class="sep"> at </span>
                   <span title={dayjs(item.published_at).tz(dayjs.tz.guess()).format()}>
                     {dayjs(item.published_at).fromNow()}</span>
+                  <Show when={item.status == api.ItemStatus.READ}>
+                    <span class="sep"> | </span>
+                    <button onClick={() => markAs([item], api.ItemStatus.UNREAD)}>Mark as unread</button>
+                  </Show>
                   <span class="sep"> | </span>
                   <Switch>
                     <Match when={!item.is_saved}><button onClick={() => toggleSave(item)}>Save</button></Match>
@@ -133,7 +138,7 @@ function Items(props: Props) {
                   <span class="sep"> | </span>
                   <button onClick={() => {
                     setSelectedItem(item);
-                    markAs([item.id], api.ItemStatus.READ)
+                    markAs([item], api.ItemStatus.READ)
                   }}>Read</button>
                 </small>
               </li>
