@@ -16,7 +16,8 @@ pub fn create_new_items(db: &Connection) -> Vec<ItemToCreate> {
 
     let mut inserted = vec![];
     for (feed, link) in pairs {
-        if let Ok(items) = fecth_feed_items(&link) {
+        if let Ok(mut items) = fecth_feed_items(&link) {
+            items.sort_by_key(|x| x.published_at);
             inserted.extend(insert_new_items(db, feed, &items));
         };
     }
