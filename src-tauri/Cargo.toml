@@ -1,6 +1,6 @@
 [package]
 name = "collie"
-version = "0.1.0"
+version = "0.1.1"
 description = "A minimal RSS reader just for you"
 authors = ["parksb <parkgds@gmail.com>"]
 license = "GPL-3.0"
