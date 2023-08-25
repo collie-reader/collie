@@ -16,6 +16,12 @@ Collie is heavily inspired by [Miniflux](https://miniflux.app/) and [RSS app for
 
 Download the latest release for your system from [release page](https://github.com/parksb/collie/releases). Collie provides `.exe`/`.msi` files for Windows, `.app`/`.dmg` files for macOS, and `.deb`/`.AppImage` files for Linux.
 
+On macOS, you can also install Collie via Homebrew:
+
+```
+$ brew install parksb/x/collie
+```
+
 ## Build
 
 If you want to build Collie from source, you should get code by forking and cloning the git repository or downloading a zip file. After placing the source in your local environment, go to the project directory, and install front-end dependencies using pnpm. (If pnpm is not installed, [install pnpm](https://pnpm.io/installation) first.)
