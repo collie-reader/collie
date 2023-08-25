@@ -61,6 +61,7 @@ function Feeds() {
 
   return (
     <div class="feeds-page container">
+      <div class="scrollable">
       <h2>Feeds</h2>
       <form
         class="row"
@@ -118,6 +119,7 @@ function Feeds() {
           </li>
         }</For>
       </ul>
+      </div>
     </div>
   );
 }

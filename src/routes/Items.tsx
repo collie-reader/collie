@@ -98,52 +98,52 @@ function Items(props: Props) {
   listen('feed_updated', async () => loadItems());
 
   return (
-    <div class="items-page container">
-      <div class="row">
-        <div class="item-list">
-          <Switch fallback={<h2>{`${props.type.valueOf()} (${count()})`}</h2>}>
-            <Match when={props.type == ItemType.FEED}>
-              <h2>
-                <a onClick={() => history.back()}>←</a>
-                <span> {`${feed() ? feed()?.title : 'Feed'} (${count()})`}</span>
-              </h2>
-            </Match>
-          </Switch>
-          <Show when={items().length && items().some(x => x.status == api.ItemStatus.UNREAD)}>
-            <div class="block controls-container">
-              <button onClick={() => markAs(items(), api.ItemStatus.READ)}>
-                Mark this page as read</button>
-            </div>
-          </Show>
-          <ul>
-            <For each={items()}>{(item: api.Item) =>
-              <li class={`${item.status == api.ItemStatus.READ ? "lowp" : ""} ${(selectedItem() && selectedItem()?.id == item.id) ? "selected" : ""}`}>
-                <strong><a href={item.link} target="_blank"
-                  onClick={() => markAs([item], api.ItemStatus.READ)}>{item.title}</a></strong>
-                <small class="row">
-                  <span class="sep">on</span> <A href={`/feeds/${item.feed.id}`}>{item.feed.title}</A>
-                  <span class="sep"> by</span> {item.author}
-                  <span class="sep"> at </span>
-                  <span title={dayjs(item.published_at).tz(dayjs.tz.guess()).format()}>
-                    {dayjs(item.published_at).fromNow()}</span>
-                  <Show when={item.status == api.ItemStatus.READ}>
-                    <span class="sep"> | </span>
-                    <button onClick={() => markAs([item], api.ItemStatus.UNREAD)}>Mark as unread</button>
-                  </Show>
+    <div class="items-page container row">
+      <div class="item-list scrollable">
+        <Switch fallback={<h2>{`${props.type.valueOf()} (${count()})`}</h2>}>
+          <Match when={props.type == ItemType.FEED}>
+            <h2>
+              <a onClick={() => history.back()}>←</a>
+              <span> {`${feed() ? feed()?.title : 'Feed'} (${count()})`}</span>
+            </h2>
+          </Match>
+        </Switch>
+        <Show when={items().length && items().some(x => x.status == api.ItemStatus.UNREAD)}>
+          <div class="block controls-container">
+            <button onClick={() => markAs(items(), api.ItemStatus.READ)}>
+              Mark this page as read</button>
+          </div>
+        </Show>
+        <ul>
+          <For each={items()}>{(item: api.Item) =>
+            <li class={`${item.status == api.ItemStatus.READ ? "lowp" : ""} ${(selectedItem() && selectedItem()?.id == item.id) ? "selected" : ""}`}>
+              <strong><a href={item.link} target="_blank"
+                onClick={() => markAs([item], api.ItemStatus.READ)}>{item.title}</a></strong>
+              <small class="row">
+                <span class="sep">on</span> <A href={`/feeds/${item.feed.id}`}>{item.feed.title}</A>
+                <span class="sep"> by</span> {item.author}
+                <span class="sep"> at </span>
+                <span title={dayjs(item.published_at).tz(dayjs.tz.guess()).format()}>
+                  {dayjs(item.published_at).fromNow()}</span>
+                <Show when={item.status == api.ItemStatus.READ}>
                   <span class="sep"> | </span>
-                  <Switch>
-                    <Match when={!item.is_saved}><button onClick={() => toggleSave(item)}>Save</button></Match>
-                    <Match when={item.is_saved}><button onClick={() => toggleSave(item)}>Unsave</button></Match>
-                  </Switch>
-                  <span class="sep"> | </span>
-                  <button onClick={() => {
-                    setSelectedItem(item);
-                    markAs([item], api.ItemStatus.READ)
-                  }}>Read</button>
-                </small>
-              </li>
-            }</For>
-          </ul>
+                  <button onClick={() => markAs([item], api.ItemStatus.UNREAD)}>Mark as unread</button>
+                </Show>
+                <span class="sep"> | </span>
+                <Switch>
+                  <Match when={!item.is_saved}><button onClick={() => toggleSave(item)}>Save</button></Match>
+                  <Match when={item.is_saved}><button onClick={() => toggleSave(item)}>Unsave</button></Match>
+                </Switch>
+                <span class="sep"> | </span>
+                <button onClick={() => {
+                  setSelectedItem(item);
+                  markAs([item], api.ItemStatus.READ)
+                }}>Read</button>
+              </small>
+            </li>
+          }</For>
+        </ul>
+        <Show when={items().length > LIMIT}>
           <div class="row">
             <Show when={offset() > 1}>
               <button onClick={() => loadPage(0)}>←← 1</button>
@@ -155,18 +155,16 @@ function Items(props: Props) {
               <button onClick={() => loadPage(offset() + 1)}>{offset() + 2} →</button>
             </Show>
           </div>
-        </div>
-        <Show when={selectedItem()}>
-          <div class="item-viewer-container">
-            <div class="item-viewer">
-              <h3>{selectedItem()?.title}</h3>
-              {/* eslint-disable-next-line solid/no-innerhtml*/}
-              <div innerHTML={DOMPurify.sanitize(selectedItem()?.description ?? "")
-                .replace(/href="http(s?).*"/g, "target=\"_blank\" $&")} />
-            </div>
-          </div>
         </Show>
       </div>
+      <Show when={selectedItem()}>
+        <div class="item-viewer scrollable">
+            <h3>{selectedItem()?.title}</h3>
+            {/* eslint-disable-next-line solid/no-innerhtml*/}
+            <div innerHTML={DOMPurify.sanitize(selectedItem()?.description ?? "")
+              .replace(/href="http(s?).*"/g, "target=\"_blank\" $&")} />
+        </div>
+      </Show>
     </div>
   );
 }

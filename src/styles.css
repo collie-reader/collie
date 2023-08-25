@@ -1,5 +1,9 @@
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 :root {
-  padding: 16px;
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-synthesis: none;
@@ -7,27 +11,12 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  padding: 1vh 0 1vh 1vw;
 }
 
 div {
   display: flex;
   flex-direction: column;
-}
-
-div.block {
-  display: block;
-}
-
-.row {
-  flex-direction: row;
-}
-
-.sep {
-  color: #9f9f9f;
-}
-
-.lowp {
-  opacity: .6;
 }
 
 a {

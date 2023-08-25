@@ -1,9 +1,44 @@
-.navigation > h1 {
+.block {
+  display: block;
+}
+
+.row {
+  flex-direction: row;
+}
+
+.sep {
+  color: #9f9f9f;
+}
+
+.lowp {
+  opacity: .6;
+}
+
+div.navigation {
+  padding-bottom: 16px;
+  max-height: 38px;
+}
+
+div.navigation > h1 {
   font-size: 1rem;
   font-weight: 700;
   margin: 0 .7rem 0 0;
 }
 
-.navigation > * {
+div.navigation > * {
   margin-right: .7rem;
+}
+
+div.container {
+  height: 100vh;
+  width: 100%;
+}
+
+div.container h2 {
+  margin: 0 0 1rem 0;
+}
+
+div.scrollable{
+  margin-bottom: 70px;
+  overflow: auto;
 }

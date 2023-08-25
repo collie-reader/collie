@@ -1,5 +1,5 @@
 div.items-page div.item-list {
-  width: 100%;
+  flex: 3;
 }
 
 div.items-page div.item-list div.controls-container {
@@ -30,17 +30,11 @@ div.items-page div.item-list {
   padding-right: 1rem;
 }
 
-div.items-page div.item-viewer-container {
-  width: 25vw;
-  border-left: 1px #9f9f9f solid;
-  padding-left: 1rem;
-}
-
 div.items-page div.item-viewer {
-  position: sticky;
+  flex: 1;
+  border-left: 1px #9f9f9f solid;
+  padding: 0 1.5rem;
   overflow-wrap: break-word;
-  width: 25vw;
-  top: 0;
 }
 
 div.items-page div.item-viewer img {
