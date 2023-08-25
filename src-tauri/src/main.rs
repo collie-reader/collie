@@ -60,9 +60,19 @@ fn main() {
         })
         .on_window_event(|event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
+                hide_window(&event);
                 api.prevent_close();
-                let _ = event.window().app_handle().hide();
             }
         })
         .run(tauri::generate_context!("tauri.conf.json"));
+}
+
+#[cfg(target_os = "macos")]
+fn hide_window(event: &tauri::GlobalWindowEvent) {
+    let _ = event.window().app_handle().hide();
+}
+
+#[cfg(not(target_os = "macos"))]
+fn hide_window(event: &tauri::GlobalWindowEvent) {
+    event.window().hide().unwrap();
 }
