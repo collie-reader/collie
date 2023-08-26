@@ -17,7 +17,7 @@ pub fn read_all_settings(db_state: State<DbState>) -> Result<Vec<Setting>, Strin
 #[tauri::command]
 pub fn read_setting(db_state: State<DbState>, key: SettingKey) -> Result<Setting, String> {
     let db = db_state.db.lock().unwrap();
-    match settings::read(&db, key) {
+    match settings::read(&db, &key) {
         Ok(setting) => Ok(setting),
         Err(err) => Err(err.to_string()),
     }

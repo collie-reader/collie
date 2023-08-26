@@ -20,7 +20,7 @@ pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate) -> Result<String
     };
 
     let db = db_state.db.lock().unwrap();
-    match feeds::create(&db, arg) {
+    match feeds::create(&db, &arg) {
         Ok(_) => {
             let _ = create_new_items(&db);
             Ok("New feed added".to_string())

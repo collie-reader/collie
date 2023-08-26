@@ -32,10 +32,10 @@ impl Display for FeedStatus {
 impl FromStr for FeedStatus {
     type Err = Error;
 
-    fn from_str(x: &str) -> std::result::Result<FeedStatus, Self::Err> {
+    fn from_str(x: &str) -> std::result::Result<Self, Self::Err> {
         match x {
-            "subscribed" => Ok(FeedStatus::Subscribed),
-            "unsubscribed" => Ok(FeedStatus::Unsubscribed),
+            "subscribed" => Ok(Self::Subscribed),
+            "unsubscribed" => Ok(Self::Unsubscribed),
             _ => Err(Error::InvalidEnumKey(
                 x.to_string(),
                 "FeedStatus".to_string(),
@@ -80,11 +80,11 @@ pub struct FeedToUpdate {
     pub checked_at: Option<DateTime<FixedOffset>>,
 }
 
-pub fn create(db: &Connection, arg: FeedToCreate) -> Result<usize> {
+pub fn create(db: &Connection, arg: &FeedToCreate) -> Result<usize> {
     let (sql, values) = Query::insert()
         .into_table(Feeds::Table)
         .columns([Feeds::Title, Feeds::Link, Feeds::CheckedAt])
-        .values_panic([arg.title.into(), arg.link.into(), Utc::now().into()])
+        .values_panic([(*arg.title).into(), (*arg.link).into(), Utc::now().into()])
         .build_rusqlite(SqliteQueryBuilder);
 
     Ok(db.execute(sql.as_str(), &*values.as_params())?)
@@ -105,7 +105,7 @@ pub fn read_all(db: &Connection) -> Result<Vec<Feed>> {
     let mut stmt = db.prepare(sql.as_str())?;
     let rows = stmt.query_map(&*values.as_params(), |x| Ok(Feed::from(x)))?;
 
-    Ok(rows.map(|x| x.unwrap()).collect::<Vec<Feed>>())
+    Ok(rows.map(std::result::Result::unwrap).collect::<Vec<Feed>>())
 }
 
 pub fn read(db: &Connection, id: i32) -> Result<Option<Feed>> {

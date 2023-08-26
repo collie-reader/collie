@@ -60,7 +60,7 @@ fn insert_new_items(db: &Connection, feed: i32, items: &[RawItem]) -> Vec<ItemTo
         description: x
             .content
             .clone()
-            .unwrap_or("".to_string())
+            .unwrap_or(String::new())
             .trim()
             .to_string(),
         status: ItemStatus::Unread,

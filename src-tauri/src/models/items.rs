@@ -21,8 +21,8 @@ pub enum ItemStatus {
 impl Display for ItemStatus {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            ItemStatus::Unread => write!(f, "unread"),
-            ItemStatus::Read => write!(f, "read"),
+            Self::Unread => write!(f, "unread"),
+            Self::Read => write!(f, "read"),
         }
     }
 }
@@ -30,10 +30,10 @@ impl Display for ItemStatus {
 impl FromStr for ItemStatus {
     type Err = Error;
 
-    fn from_str(x: &str) -> std::result::Result<ItemStatus, Self::Err> {
+    fn from_str(x: &str) -> std::result::Result<Self, Self::Err> {
         match x {
-            "unread" => Ok(ItemStatus::Unread),
-            "read" => Ok(ItemStatus::Read),
+            "unread" => Ok(Self::Unread),
+            "read" => Ok(Self::Read),
             _ => Err(Error::InvalidEnumKey(
                 x.to_string(),
                 "ItemStatus".to_string(),
@@ -153,7 +153,7 @@ pub fn create(db: &Connection, arg: &ItemToCreate) -> Result<usize> {
     Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }
 
-pub fn read_all(db: &Connection, opt: ItemReadOption) -> Result<Vec<Item>> {
+pub fn read_all(db: &Connection, opt: &ItemReadOption) -> Result<Vec<Item>> {
     let mut query = Query::select()
         .columns([
             (Items::Table, Items::Id),
@@ -182,33 +182,33 @@ pub fn read_all(db: &Connection, opt: ItemReadOption) -> Result<Vec<Item>> {
         )
         .order_by((Items::Table, Items::Id), Order::Desc)
         .order_by(Items::PublishedAt, Order::Desc)
-        .to_owned();
+        .clone();
 
-    if let Some(ids) = opt.ids {
-        query.and_where(Expr::col(Items::Id).is_in(ids));
+    if let Some(ids) = &opt.ids {
+        query.and_where(Expr::col(Items::Id).is_in(ids.clone()));
     }
 
-    if let Some(feed) = opt.feed {
-        query.and_where(Expr::col(Items::Feed).eq(feed));
+    if let Some(feed) = &opt.feed {
+        query.and_where(Expr::col(Items::Feed).eq(*feed));
     }
 
-    if let Some(status) = opt.status {
+    if let Some(status) = &opt.status {
         query.and_where(Expr::col((Items::Table, Items::Status)).eq(status.to_string()));
     }
 
-    if let Some(is_saved) = opt.is_saved {
-        query.and_where(Expr::col(Items::IsSaved).eq(is_saved));
+    if let Some(is_saved) = &opt.is_saved {
+        query.and_where(Expr::col(Items::IsSaved).eq(*is_saved));
     }
 
-    if let Some(limit) = opt.limit {
-        query.limit(limit);
+    if let Some(limit) = &opt.limit {
+        query.limit(*limit);
     }
 
-    if let Some(offset) = opt.offset {
-        query.offset(if let Some(limit) = opt.limit {
+    if let Some(offset) = &opt.offset {
+        query.offset(if let Some(limit) = &opt.limit {
             offset * limit
         } else {
-            offset
+            *offset
         });
     }
 
@@ -216,25 +216,25 @@ pub fn read_all(db: &Connection, opt: ItemReadOption) -> Result<Vec<Item>> {
     let mut stmt = db.prepare(sql.as_str())?;
     let rows = stmt.query_map(&*values.as_params(), |x| Ok(Item::from(x)))?;
 
-    Ok(rows.map(|x| x.unwrap()).collect::<Vec<Item>>())
+    Ok(rows.map(std::result::Result::unwrap).collect::<Vec<Item>>())
 }
 
-pub fn count_all(db: &Connection, opt: ItemReadOption) -> Result<i64> {
+pub fn count_all(db: &Connection, opt: &ItemReadOption) -> Result<i64> {
     let mut query = Query::select()
         .from(Items::Table)
         .expr(Func::count(Expr::col(Items::Id)))
-        .to_owned();
+        .clone();
 
-    if let Some(feed) = opt.feed {
-        query.and_where(Expr::col(Items::Feed).eq(feed));
+    if let Some(feed) = &opt.feed {
+        query.and_where(Expr::col(Items::Feed).eq(*feed));
     }
 
-    if let Some(status) = opt.status {
+    if let Some(status) = &opt.status {
         query.and_where(Expr::col((Items::Table, Items::Status)).eq(status.to_string()));
     }
 
-    if let Some(is_saved) = opt.is_saved {
-        query.and_where(Expr::col(Items::IsSaved).eq(is_saved));
+    if let Some(is_saved) = &opt.is_saved {
+        query.and_where(Expr::col(Items::IsSaved).eq(*is_saved));
     }
 
     let (sql, values) = query.build_rusqlite(SqliteQueryBuilder);
@@ -248,15 +248,15 @@ pub fn count_all(db: &Connection, opt: ItemReadOption) -> Result<i64> {
     })
 }
 
-pub fn update(db: &Connection, arg: ItemToUpdate) -> Result<usize> {
+pub fn update(db: &Connection, arg: &ItemToUpdate) -> Result<usize> {
     let mut vals = vec![];
 
-    if let Some(status) = arg.status {
+    if let Some(status) = &arg.status {
         vals.push((Items::Status, status.to_string().into()));
     }
 
-    if let Some(is_saved) = arg.is_saved {
-        vals.push((Items::IsSaved, is_saved.into()));
+    if let Some(is_saved) = &arg.is_saved {
+        vals.push((Items::IsSaved, (*is_saved).into()));
     }
 
     let (sql, values) = Query::update()
@@ -268,34 +268,34 @@ pub fn update(db: &Connection, arg: ItemToUpdate) -> Result<usize> {
     Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }
 
-pub fn update_all(db: &Connection, arg: ItemToUpdateAll) -> Result<usize> {
+pub fn update_all(db: &Connection, arg: &ItemToUpdateAll) -> Result<usize> {
     let mut vals = vec![];
 
-    if let Some(status) = arg.status {
+    if let Some(status) = &arg.status {
         vals.push((Items::Status, status.to_string().into()));
     }
 
-    if let Some(is_saved) = arg.is_saved {
-        vals.push((Items::IsSaved, is_saved.into()));
+    if let Some(is_saved) = &arg.is_saved {
+        vals.push((Items::IsSaved, (*is_saved).into()));
     }
 
-    let mut query = Query::update().table(Items::Table).values(vals).to_owned();
+    let mut query = Query::update().table(Items::Table).values(vals).clone();
 
-    if let Some(opt) = arg.opt {
-        if let Some(ids) = opt.ids {
-            query.and_where(Expr::col(Items::Id).is_in(ids));
+    if let Some(opt) = &arg.opt {
+        if let Some(ids) = &opt.ids {
+            query.and_where(Expr::col(Items::Id).is_in(ids.clone()));
         }
 
-        if let Some(feed) = opt.feed {
-            query.and_where(Expr::col(Items::Feed).eq(feed));
+        if let Some(feed) = &opt.feed {
+            query.and_where(Expr::col(Items::Feed).eq(*feed));
         }
 
-        if let Some(status) = opt.status {
+        if let Some(status) = &opt.status {
             query.and_where(Expr::col((Items::Table, Items::Status)).eq(status.to_string()));
         }
 
-        if let Some(is_saved) = opt.is_saved {
-            query.and_where(Expr::col(Items::IsSaved).eq(is_saved));
+        if let Some(is_saved) = &opt.is_saved {
+            query.and_where(Expr::col(Items::IsSaved).eq(*is_saved));
         }
     }
 

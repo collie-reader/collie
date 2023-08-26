@@ -35,7 +35,7 @@ pub fn start(app: &App) {
 }
 
 fn polling_frequency(db: &Connection) -> u64 {
-    settings::read(db, SettingKey::PollingFrequency)
+    settings::read(db, &SettingKey::PollingFrequency)
         .map(|x| x.value)
         .unwrap_or("120".to_string())
         .parse()
@@ -43,7 +43,7 @@ fn polling_frequency(db: &Connection) -> u64 {
 }
 
 fn notification(db: &Connection) -> bool {
-    settings::read(db, SettingKey::Notification)
+    settings::read(db, &SettingKey::Notification)
         .map(|x| x.value)
         .unwrap_or("1".to_string())
         .parse()

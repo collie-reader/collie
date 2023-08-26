@@ -37,8 +37,8 @@ pub fn fecth_feed_items(link: &str) -> Result<Vec<RawItem>> {
                 link: x.links().first().map(|x| x.href().to_string()),
                 content: x
                     .content()
-                    .map(|x| x.value())
-                    .filter(|x| x.is_some())
+                    .map(atom_syndication::Content::value)
+                    .filter(std::option::Option::is_some)
                     .map(|x| x.unwrap().to_string()),
                 published_at: x.published().map(|x| x.with_timezone(&Utc).fixed_offset()),
             })
@@ -52,16 +52,16 @@ pub fn fecth_feed_items(link: &str) -> Result<Vec<RawItem>> {
                     .author()
                     .map(|x| x.trim().to_string())
                     .or(x.dublin_core_ext().map(|x| x.creators().join(","))),
-                link: x.link().map(|x| x.to_string()),
-                content: x.description().map(|x| x.to_string()),
+                link: x.link().map(std::string::ToString::to_string),
+                content: x.description().map(std::string::ToString::to_string),
                 published_at: x
                     .pub_date()
                     .map(|x| {
                         DateTime::parse_from_rfc2822(x)
                             .map(|x| x.with_timezone(&Utc).fixed_offset())
                     })
-                    .filter(|x| x.is_ok())
-                    .map(|x| x.unwrap()),
+                    .filter(std::result::Result::is_ok)
+                    .map(std::result::Result::unwrap),
             })
             .collect()),
     }
@@ -89,9 +89,9 @@ impl FromStr for Feed {
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match atom_syndication::Feed::from_str(s) {
-            Ok(feed) => Ok(Feed::Atom(feed)),
+            Ok(feed) => Ok(Self::Atom(feed)),
             Err(_) => match rss::Channel::from_str(s) {
-                Ok(channel) => Ok(Feed::RSS(channel)),
+                Ok(channel) => Ok(Self::RSS(channel)),
                 Err(_) => Err(Error::SyndicationParsingFailure),
             },
         }

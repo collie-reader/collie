@@ -24,10 +24,10 @@ pub enum SettingKey {
 impl Display for SettingKey {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            SettingKey::PollingFrequency => write!(f, "polling_frequency"),
-            SettingKey::Notification => write!(f, "notification"),
-            SettingKey::DbSchemeVersion => write!(f, "db_scheme_version"),
-            SettingKey::Theme => write!(f, "theme"),
+            Self::PollingFrequency => write!(f, "polling_frequency"),
+            Self::Notification => write!(f, "notification"),
+            Self::DbSchemeVersion => write!(f, "db_scheme_version"),
+            Self::Theme => write!(f, "theme"),
         }
     }
 }
@@ -35,12 +35,12 @@ impl Display for SettingKey {
 impl FromStr for SettingKey {
     type Err = Error;
 
-    fn from_str(x: &str) -> std::result::Result<SettingKey, Self::Err> {
+    fn from_str(x: &str) -> std::result::Result<Self, Self::Err> {
         match x {
-            "polling_frequency" => Ok(SettingKey::PollingFrequency),
-            "notification" => Ok(SettingKey::Notification),
-            "db_scheme_version" => Ok(SettingKey::DbSchemeVersion),
-            "theme" => Ok(SettingKey::Theme),
+            "polling_frequency" => Ok(Self::PollingFrequency),
+            "notification" => Ok(Self::Notification),
+            "db_scheme_version" => Ok(Self::DbSchemeVersion),
+            "theme" => Ok(Self::Theme),
             _ => Err(Error::InvalidEnumKey(
                 x.to_string(),
                 "SettingKey".to_string(),
@@ -79,10 +79,12 @@ pub fn read_all(db: &Connection) -> Result<Vec<Setting>> {
     let mut stmt = db.prepare(sql.as_str())?;
     let rows = stmt.query_map(&*values.as_params(), |x| Ok(Setting::from(x)))?;
 
-    Ok(rows.map(|x| x.unwrap()).collect::<Vec<Setting>>())
+    Ok(rows
+        .map(std::result::Result::unwrap)
+        .collect::<Vec<Setting>>())
 }
 
-pub fn read(db: &Connection, key: SettingKey) -> Result<Setting> {
+pub fn read(db: &Connection, key: &SettingKey) -> Result<Setting> {
     let (sql, values) = Query::select()
         .columns([Settings::Key, Settings::Value])
         .from(Settings::Table)
