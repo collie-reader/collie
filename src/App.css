@@ -7,7 +7,7 @@
 }
 
 .sep {
-  color: #9f9f9f;
+  color: var(--color-sep);
 }
 
 .lowp {

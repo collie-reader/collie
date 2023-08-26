@@ -3,7 +3,8 @@ import { invoke } from "@tauri-apps/api/tauri";
 export enum SettingKey {
   POLLING_FREQUENCY = "PollingFrequency",
   NOTIFICATION = "Notification",
-  DB_SCHEME_VERSION = "DB Scheme Version",
+  DB_SCHEME_VERSION = "DbSchemeVersion",
+  THEME = "Theme",
 }
 
 export interface Setting {
@@ -20,7 +21,17 @@ export async function readAllSettings(): Promise<Setting[]> {
     // Do nothing
   }
 
-  return  [];
+  return [];
+}
+
+export async function readSetting(key: SettingKey): Promise<Setting | null> {
+  try {
+    return invoke("read_setting", { key });
+  } catch (e) {
+    // Do nothing
+  }
+
+  return null;
 }
 
 export async function updateSetting(arg: SettingToUpdate) {

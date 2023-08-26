@@ -1,14 +1,35 @@
-import { lazy } from "solid-js";
+import { lazy, onMount } from "solid-js";
 import { A, Route, Routes } from "@solidjs/router";
 
 import "./App.css";
 import { ItemType } from "./routes/models/items";
+import * as api from "./api/settings";
 
 const Items = lazy(() => import("./routes/Items"));
 const Feeds = lazy(() => import("./routes/Feeds"));
 const Settings = lazy(() => import("./routes/Settings"));
 
 function App() {
+  const setTheme = (theme: string) => {
+    document.querySelector("html")?.setAttribute("data-theme", theme);
+  }
+
+  onMount(async () => {
+    const res = await api.readSetting(api.SettingKey.THEME);
+    const theme = res?.value ?? "system";
+    switch (theme) {
+      case "system":
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          setTheme("dark");
+        } else {
+          setTheme("light");
+        }
+        break;
+      default:
+          setTheme(theme);
+    }
+  });
+
   return (
     <div class="container">
       <div class="navigation row">

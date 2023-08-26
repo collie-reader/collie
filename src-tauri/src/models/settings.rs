@@ -18,6 +18,7 @@ pub enum SettingKey {
     PollingFrequency, // seconds
     Notification,
     DbSchemeVersion,
+    Theme,
 }
 
 impl Display for SettingKey {
@@ -26,6 +27,7 @@ impl Display for SettingKey {
             SettingKey::PollingFrequency => write!(f, "polling_frequency"),
             SettingKey::Notification => write!(f, "notification"),
             SettingKey::DbSchemeVersion => write!(f, "db_scheme_version"),
+            SettingKey::Theme => write!(f, "theme"),
         }
     }
 }
@@ -38,6 +40,7 @@ impl FromStr for SettingKey {
             "polling_frequency" => Ok(SettingKey::PollingFrequency),
             "notification" => Ok(SettingKey::Notification),
             "db_scheme_version" => Ok(SettingKey::DbSchemeVersion),
+            "theme" => Ok(SettingKey::Theme),
             _ => Err(Error::InvalidEnumKey(
                 x.to_string(),
                 "SettingKey".to_string(),
@@ -106,6 +109,7 @@ pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
             }
         }
         SettingKey::DbSchemeVersion => return Err(Error::Forbidden),
+        _ => {}
     }
 
     let (sql, values) = Query::update()

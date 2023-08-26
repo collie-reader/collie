@@ -144,6 +144,7 @@ pub fn migrate(db: &Connection) -> Result<()> {
     let _ = insert_settings(db, "db_scheme_version", "1");
     let _ = insert_settings(db, "polling_frequency", "120");
     let _ = insert_settings(db, "notification", "1");
+    let _ = insert_settings(db, "theme", "system");
 
     Ok(())
 }

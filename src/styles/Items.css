@@ -17,7 +17,7 @@ div.items-page div.item-list > ul > li {
 }
 
 div.items-page div.item-list > ul > li.selected {
-  background-color: yellow;
+  background-color: var(--color-selected);
 }
 
 div.items-page div.item-list > ul > li > small {
@@ -32,7 +32,7 @@ div.items-page div.item-list {
 
 div.items-page div.item-viewer {
   flex: 1;
-  border-left: 1px #9f9f9f solid;
+  border-left: 1px var(--color-sep) solid;
   padding: 0 1.5rem;
   overflow-wrap: break-word;
 }

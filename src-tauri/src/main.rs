@@ -40,6 +40,7 @@ fn main() {
             commands::items::update_item,
             commands::items::update_items,
             commands::settings::read_all_settings,
+            commands::settings::read_setting,
             commands::settings::update_setting,
         ])
         .setup(|app| {
