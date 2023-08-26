@@ -20,7 +20,8 @@ chrono = { version = "0.4", default-features = false, features = ["clock", "serd
 rusqlite = "0.28"
 sea-query = "0"
 sea-query-rusqlite = { version = "0", features = ["with-chrono"] }
-syndication = "0.5.0"
+rss = "2.0"
+atom_syndication = "0.12"
 reqwest = { version = "0.11", features = ["blocking"] }
 sha1_smol = { version = "1", features = ["std"] }
 thiserror = "1.0"

@@ -1,6 +1,7 @@
 use chrono::{DateTime, FixedOffset, Utc};
-use std::error::Error;
-use syndication::Feed;
+use std::str::FromStr;
+
+use crate::error::{Error, Result};
 
 pub struct RawItem {
     pub title: String,
@@ -10,16 +11,16 @@ pub struct RawItem {
     pub published_at: Option<DateTime<FixedOffset>>,
 }
 
-pub fn fecth_feed_title(link: &str) -> Result<String, Box<dyn Error>> {
-    let content = reqwest::blocking::get(link)?.text()?;
+pub fn fecth_feed_title(link: &str) -> Result<String> {
+    let content = fetch_content(link)?;
     match content.parse::<Feed>()? {
         Feed::Atom(atom) => Ok(atom.title().to_string()),
         Feed::RSS(rss) => Ok(rss.title().to_string()),
     }
 }
 
-pub fn fecth_feed_items(link: &str) -> Result<Vec<RawItem>, Box<dyn Error>> {
-    let content = reqwest::blocking::get(link)?.text()?;
+pub fn fecth_feed_items(link: &str) -> Result<Vec<RawItem>> {
+    let content = fetch_content(link)?;
     match content.parse::<Feed>()? {
         Feed::Atom(atom) => Ok(atom
             .entries()
@@ -39,14 +40,7 @@ pub fn fecth_feed_items(link: &str) -> Result<Vec<RawItem>, Box<dyn Error>> {
                     .map(|x| x.value())
                     .filter(|x| x.is_some())
                     .map(|x| x.unwrap().to_string()),
-                published_at: x
-                    .published()
-                    .map(|x| {
-                        DateTime::parse_from_rfc3339(x)
-                            .map(|x| x.with_timezone(&Utc).fixed_offset())
-                    })
-                    .filter(|x| x.is_ok())
-                    .map(|x| x.unwrap()),
+                published_at: x.published().map(|x| x.with_timezone(&Utc).fixed_offset()),
             })
             .collect()),
         Feed::RSS(rss) => Ok(rss
@@ -70,5 +64,36 @@ pub fn fecth_feed_items(link: &str) -> Result<Vec<RawItem>, Box<dyn Error>> {
                     .map(|x| x.unwrap()),
             })
             .collect()),
+    }
+}
+
+fn fetch_content(link: &str) -> Result<String> {
+    let client = reqwest::blocking::Client::new();
+    Ok(client
+        .get(link)
+        .header("User-Agent", "Mozilla/5.0")
+        .send()?
+        .text()?)
+}
+
+// borrowed from https://github.com/rust-syndication/syndication
+
+#[derive(Clone)]
+pub enum Feed {
+    Atom(atom_syndication::Feed),
+    RSS(rss::Channel),
+}
+
+impl FromStr for Feed {
+    type Err = Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match atom_syndication::Feed::from_str(s) {
+            Ok(feed) => Ok(Feed::Atom(feed)),
+            Err(_) => match rss::Channel::from_str(s) {
+                Ok(channel) => Ok(Feed::RSS(channel)),
+                Err(_) => Err(Error::SyndicationParsingFailure),
+            },
+        }
     }
 }

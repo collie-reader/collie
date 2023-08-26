@@ -9,6 +9,9 @@ pub enum Error {
     #[error("forbidden")]
     Forbidden,
 
+    #[error("failed to parse syndication feed")]
+    SyndicationParsingFailure,
+
     #[error("unknown")]
     Unknown,
 
@@ -22,6 +25,12 @@ pub enum Error {
     SeaQueryError {
         #[from]
         source: sea_query::error::Error,
+    },
+
+    #[error(transparent)]
+    ReqwestError {
+        #[from]
+        source: reqwest::Error,
     },
 }
 
