@@ -143,7 +143,7 @@ function Items(props: Props) {
             </li>
           }</For>
         </ul>
-        <Show when={items().length > LIMIT}>
+        <Show when={count() > LIMIT}>
           <div class="row">
             <Show when={offset() > 1}>
               <button onClick={() => loadPage(0)}>←← 1</button>
