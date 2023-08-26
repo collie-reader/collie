@@ -14,6 +14,7 @@ dayjs.extend(timezone);
 import "../styles/Items.css";
 import * as api from "../api/items";
 import * as feedApi from "../api/feeds";
+import * as settingApi from "../api/settings";
 import { ItemType } from './models/items';
 
 interface Props {
@@ -66,8 +67,19 @@ function Items(props: Props) {
     }
   };
 
+  const changeOrder = async (order: api.ItemOrder) => {
+    setOpt({ ...opt(), order_by: order });
+    await Promise.all([
+      settingApi.updateSetting({ key: settingApi.SettingKey.ITEMS_ORDER, value: order }),
+      loadItems(),
+    ]);
+  }
+
   onMount(async () => {
-    let initialOpt = { offset: 0, limit: LIMIT };
+    const res = await settingApi.readSetting(settingApi.SettingKey.ITEMS_ORDER);
+    const order = res?.value ?? api.ItemOrder.RECEIVED_DATE_DESC;
+
+    let initialOpt = { order_by: api.ItemOrderfrom(order), offset: 0, limit: LIMIT };
     switch (props.type) {
       case ItemType.INBOX:
         setOpt(initialOpt);
@@ -108,12 +120,21 @@ function Items(props: Props) {
             </h2>
           </Match>
         </Switch>
-        <Show when={items().length && items().some(x => x.status == api.ItemStatus.UNREAD)}>
-          <div class="block controls-container">
+        <div class="row controls-container">
+          <label for="sort">Sort by</label>
+          <select name="sort" onChange={(e) => changeOrder(api.ItemOrderfrom(e.target.value))}>
+            <option selected={opt().order_by === api.ItemOrder.RECEIVED_DATE_DESC}
+              value={api.ItemOrder.RECEIVED_DATE_DESC}>Received date</option>
+            <option selected={opt().order_by === api.ItemOrder.PUBLISHED_DATE_DESC}
+              value={api.ItemOrder.PUBLISHED_DATE_DESC}>Published date</option>
+            <option selected={opt().order_by === api.ItemOrder.UNREAD_FIRST}
+              value={api.ItemOrder.UNREAD_FIRST}>Unread first</option>
+          </select>
+          <Show when={items().length && items().some(x => x.status == api.ItemStatus.UNREAD)}>
             <button onClick={() => markAs(items(), api.ItemStatus.READ)}>
               Mark this page as read</button>
-          </div>
-        </Show>
+          </Show>
+        </div>
         <ul>
           <For each={items()}>{(item: api.Item) =>
             <li class={`${item.status == api.ItemStatus.READ ? "lowp" : ""} ${(selectedItem() && selectedItem()?.id == item.id) ? "selected" : ""}`}>

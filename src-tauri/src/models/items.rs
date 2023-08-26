@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use chrono::{DateTime, FixedOffset};
 use rusqlite::{Connection, Row};
-use sea_query::{Alias, Expr, Func, Order, Query, SqliteQueryBuilder};
+use sea_query::{Alias, Expr, Func, Order, Query, SqliteQueryBuilder, Values};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
 use sha1_smol::Sha1;
@@ -116,11 +116,19 @@ pub struct ItemToUpdateAll {
 }
 
 #[derive(Deserialize)]
+pub enum ItemOrder {
+    ReceivedDateDesc,
+    PublishedDateDesc,
+    UnreadFirst,
+}
+
+#[derive(Deserialize)]
 pub struct ItemReadOption {
     pub ids: Option<Vec<i32>>,
     pub feed: Option<i32>,
     pub status: Option<ItemStatus>,
     pub is_saved: Option<bool>,
+    pub order_by: Option<ItemOrder>,
     pub limit: Option<u64>,
     pub offset: Option<u64>,
 }
@@ -180,8 +188,6 @@ pub fn read_all(db: &Connection, opt: &ItemReadOption) -> Result<Vec<Item>> {
             Feeds::Table,
             Expr::col((Items::Table, Items::Feed)).equals((Feeds::Table, Feeds::Id)),
         )
-        .order_by((Items::Table, Items::Id), Order::Desc)
-        .order_by(Items::PublishedAt, Order::Desc)
         .clone();
 
     if let Some(ids) = &opt.ids {
@@ -198,6 +204,27 @@ pub fn read_all(db: &Connection, opt: &ItemReadOption) -> Result<Vec<Item>> {
 
     if let Some(is_saved) = &opt.is_saved {
         query.and_where(Expr::col(Items::IsSaved).eq(*is_saved));
+    }
+
+    if let Some(order_by) = &opt.order_by {
+        match order_by {
+            ItemOrder::ReceivedDateDesc => {
+                query
+                    .order_by((Items::Table, Items::Id), Order::Desc)
+                    .order_by(Items::PublishedAt, Order::Desc);
+            }
+            ItemOrder::PublishedDateDesc => {
+                query.order_by(Items::PublishedAt, Order::Desc);
+            }
+            ItemOrder::UnreadFirst => {
+                query
+                    .order_by(
+                        (Items::Table, Items::Status),
+                        Order::Field(Values(vec![ItemStatus::Unread.to_string().into()])),
+                    )
+                    .order_by(Items::PublishedAt, Order::Desc);
+            }
+        }
     }
 
     if let Some(limit) = &opt.limit {

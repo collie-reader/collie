@@ -5,6 +5,7 @@ export enum SettingKey {
   NOTIFICATION = "Notification",
   DB_SCHEME_VERSION = "DbSchemeVersion",
   THEME = "Theme",
+  ITEMS_ORDER = "ItemsOrder",
 }
 
 export interface Setting {

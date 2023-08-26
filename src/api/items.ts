@@ -46,11 +46,31 @@ export interface ItemToUpdateAll {
   option: ItemReadOption,
 }
 
+export enum ItemOrder {
+  RECEIVED_DATE_DESC = "ReceivedDateDesc",
+  PUBLISHED_DATE_DESC = "PublishedDateDesc",
+  UNREAD_FIRST = "UnreadFirst",
+}
+
+export function ItemOrderfrom(x: string) {
+  switch (x) {
+    case "ReceivedDateDesc":
+      return ItemOrder.RECEIVED_DATE_DESC;
+    case "PublishedDateDesc":
+      return ItemOrder.PUBLISHED_DATE_DESC;
+    case "UnreadFirst":
+      return ItemOrder.UNREAD_FIRST;
+    default:
+      return ItemOrder.RECEIVED_DATE_DESC;
+  }
+}
+
 export interface ItemReadOption {
   ids?: number[] | null,
   feed?: number | null,
   status?: ItemStatus | null,
   is_saved?: boolean | null,
+  order_by?: ItemOrder | null,
   limit?: number | null,
   offset?: number | null,
 }

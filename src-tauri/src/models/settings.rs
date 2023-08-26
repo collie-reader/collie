@@ -19,6 +19,7 @@ pub enum SettingKey {
     Notification,
     DbSchemeVersion,
     Theme,
+    ItemsOrder,
 }
 
 impl Display for SettingKey {
@@ -28,6 +29,7 @@ impl Display for SettingKey {
             Self::Notification => write!(f, "notification"),
             Self::DbSchemeVersion => write!(f, "db_scheme_version"),
             Self::Theme => write!(f, "theme"),
+            Self::ItemsOrder => write!(f, "items_order"),
         }
     }
 }
@@ -41,6 +43,7 @@ impl FromStr for SettingKey {
             "notification" => Ok(Self::Notification),
             "db_scheme_version" => Ok(Self::DbSchemeVersion),
             "theme" => Ok(Self::Theme),
+            "items_order" => Ok(Self::ItemsOrder),
             _ => Err(Error::InvalidEnumKey(
                 x.to_string(),
                 "SettingKey".to_string(),
