@@ -1,15 +1,23 @@
+import { getVersion } from '@tauri-apps/api/app';
+import { appDataDir } from '@tauri-apps/api/path';
+
 import { createSignal, For, Match, onMount, Show, Switch } from "solid-js";
 
 import "../styles/Settings.css";
 import * as api from "../api/settings";
 
 function Settings() {
+  const [version, setVersion] = createSignal("");
+  const [latestVersion, setLatestVersion] = createSignal("");
+  const [dataDir, setDataDir] = createSignal("");
+
   const [settings, setSettings] = createSignal<api.Setting[]>([]);
   const [newSettings, setNewSettings] = createSignal<{ [key in api.SettingKey]: string }>({
     [api.SettingKey.POLLING_FREQUENCY]: "",
     [api.SettingKey.NOTIFICATION]: "",
     [api.SettingKey.DB_SCHEME_VERSION]: "",
     [api.SettingKey.THEME]: "",
+    [api.SettingKey.ITEMS_ORDER]: "",
   });
 
   const keyToText = (key: api.SettingKey) => {
@@ -63,7 +71,21 @@ function Settings() {
     </Show>;
 
   onMount(async () => {
-    await load();
+    const fetchLatestVersion = async (): Promise<string> => {
+      const res = await fetch("https://api.github.com/repos/parksb/collie/releases/latest");
+      return (await res.json())['tag_name'];
+    };
+
+    const [fetchedVersion, fetchedLatestVersion, fetchedDataDir] = await Promise.all([
+      getVersion(),
+      fetchLatestVersion(),
+      appDataDir(),
+      load(),
+    ]);
+
+    setVersion(fetchedVersion);
+    setLatestVersion(fetchedLatestVersion);
+    setDataDir(fetchedDataDir);
 
     let newSettingsPlaceholder = newSettings();
     settings().forEach((setting: api.Setting) => {
@@ -109,6 +131,12 @@ function Settings() {
             </Switch>
           </li>
         }</For>
+        <li>
+          <strong>Current version</strong>: v{version()}
+          <small>Latest version: <a href="https://github.com/parksb/collie/releases/latest"
+            target="_blank">{latestVersion()}</a></small>
+        </li>
+        <li><strong>Data directory</strong>: {dataDir()}</li>
       </ul>
     </div>
   );

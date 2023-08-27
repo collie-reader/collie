@@ -23,6 +23,9 @@
       "dialog": {
         "ask": true,
         "confirm": true
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {
