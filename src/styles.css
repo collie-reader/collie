@@ -1,9 +1,9 @@
 [data-theme="dark"] {
   color-scheme: dark;
   --color-fg: #f0f0f0;
-  --color-bg: #333946;
-  --color-link: #3173d9;
-  --color-selected: #afaf00;
+  --color-bg: #252526;
+  --color-link: #007acc;
+  --color-selected: #8f8f00;
   --color-sep: #afafaf;
 }
 
