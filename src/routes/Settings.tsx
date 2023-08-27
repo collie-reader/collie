@@ -98,15 +98,12 @@ function Settings() {
               </Match>
               <Match when={setting.key === api.SettingKey.THEME}>
                 <span><strong>{keyToText(setting.key)}</strong>: </span>
-                <label for="system"><input type="radio" id="system" name={setting.key} value="system"
-                  checked={newSettings()[setting.key] === "system"}
-                  onChange={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })} />Sync with system</label>
-                <label for="light"><input type="radio" id="light" name={setting.key} value="light"
-                  checked={newSettings()[setting.key] === "light"}
-                  onChange={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })} />Light</label>
-                <label for="dark"><input type="radio" id="dark" name={setting.key} value="dark"
-                  checked={newSettings()[setting.key] === "dark"}
-                  onChange={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })} />Dark</label>
+                <select onChange={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })}>
+                  <option value="system" selected={newSettings()[setting.key] === "system"}>Sync with system</option>
+                  <option value="light" selected={newSettings()[setting.key] === "light"}>Light</option>
+                  <option value="dark" selected={newSettings()[setting.key] === "dark"}>Dark</option>
+                  <option  value="dracula" selected={newSettings()[setting.key] === "dracula"}>Dracula</option>
+                </select>
                 {SaveButton(setting, () => location.reload())}
               </Match>
             </Switch>
