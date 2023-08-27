@@ -17,16 +17,20 @@ function App() {
   onMount(async () => {
     const res = await api.readSetting(api.SettingKey.THEME);
     const theme = res?.value ?? "system";
+    const systemDarkTheme = window.matchMedia('(prefers-color-scheme: dark)');
+
     switch (theme) {
       case "system":
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        if (systemDarkTheme.matches) {
           setTheme("dark");
         } else {
           setTheme("light");
         }
+        systemDarkTheme.addEventListener("change", (e) =>
+          e.matches ? setTheme("dark") : setTheme("light"));
         break;
       default:
-          setTheme(theme);
+        setTheme(theme);
     }
   });
 
