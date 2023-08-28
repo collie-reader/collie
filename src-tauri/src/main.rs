@@ -23,6 +23,11 @@ pub mod producer;
 pub mod syndication;
 pub mod worker;
 
+#[cfg(test)]
+mod tests {
+    mod syndication;
+}
+
 pub struct DbState {
     db: Mutex<Connection>,
 }

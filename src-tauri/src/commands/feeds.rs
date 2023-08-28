@@ -3,13 +3,13 @@ use tauri::State;
 use crate::{
     models::feeds::{self, Feed, FeedToCreate, FeedToUpdate},
     producer::create_new_items,
-    syndication::fecth_feed_title,
+    syndication::fetch_feed_title,
     DbState,
 };
 
 #[tauri::command]
 pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate) -> Result<String, String> {
-    let title = match fecth_feed_title(&arg.link) {
+    let title = match fetch_feed_title(&arg.link) {
         Ok(title) => title,
         Err(err) => return Err(err.to_string()),
     };

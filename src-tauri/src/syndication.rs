@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use crate::error::{Error, Result};
 
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct RawItem {
     pub title: String,
     pub author: Option<String>,
@@ -11,7 +12,7 @@ pub struct RawItem {
     pub published_at: Option<DateTime<FixedOffset>>,
 }
 
-pub fn fecth_feed_title(link: &str) -> Result<String> {
+pub fn fetch_feed_title(link: &str) -> Result<String> {
     let content = fetch_content(link)?;
     match content.parse::<Feed>()? {
         Feed::Atom(atom) => Ok(atom.title().to_string()),
@@ -19,7 +20,7 @@ pub fn fecth_feed_title(link: &str) -> Result<String> {
     }
 }
 
-pub fn fecth_feed_items(link: &str) -> Result<Vec<RawItem>> {
+pub fn fetch_feed_items(link: &str) -> Result<Vec<RawItem>> {
     let content = fetch_content(link)?;
     match content.parse::<Feed>()? {
         Feed::Atom(atom) => Ok(atom
@@ -67,6 +68,13 @@ pub fn fecth_feed_items(link: &str) -> Result<Vec<RawItem>> {
     }
 }
 
+#[cfg(test)]
+fn fetch_content(link: &str) -> Result<String> {
+    use std::fs;
+    Ok(fs::read_to_string(link)?)
+}
+
+#[cfg(not(test))]
 fn fetch_content(link: &str) -> Result<String> {
     let client = reqwest::blocking::Client::new();
     Ok(client

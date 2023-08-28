@@ -1,3 +1,5 @@
+use std::io;
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("invalid value `{0}`")]
@@ -31,6 +33,12 @@ pub enum Error {
     ReqwestError {
         #[from]
         source: reqwest::Error,
+    },
+
+    #[error(transparent)]
+    IoError {
+        #[from]
+        source: io::Error,
     },
 }
 
