@@ -180,10 +180,13 @@ function Items(props: Props) {
       </div>
       <Show when={selectedItem()}>
         <div class="item-viewer scrollable">
-            <h3>{selectedItem()?.title}</h3>
-            {/* eslint-disable-next-line solid/no-innerhtml*/}
-            <div innerHTML={DOMPurify.sanitize(selectedItem()?.description ?? "")
-              .replace(/href="http(s?).*"/g, "target=\"_blank\" $&")} />
+          <h2 class="heading">
+            <span>{selectedItem()?.title}</span>
+            <button onClick={() => setSelectedItem(null)}>✖</button>
+          </h2>
+          {/* eslint-disable-next-line solid/no-innerhtml*/}
+          <div innerHTML={DOMPurify.sanitize(selectedItem()?.description ?? "")
+            .replace(/href="http(s?).*"/g, "target=\"_blank\" $&")} />
         </div>
       </Show>
     </div>

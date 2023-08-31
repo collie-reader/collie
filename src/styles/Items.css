@@ -35,8 +35,42 @@ div.items-page div.item-viewer {
   border-left: 1px var(--color-sep) solid;
   padding: 0 1.5rem;
   overflow-wrap: break-word;
+  font-size: 1rem;
+}
+
+div.items-page div.item-viewer .heading {
+  font-size: 1.5rem;
+}
+
+div.items-page div.item-viewer .heading > button {
+  font-size: 1.2rem;
+  margin-left: 5px;
+}
+
+div.items-page div.item-viewer h1 {
+  font-size: 1.5rem;
 }
 
 div.items-page div.item-viewer img {
   width: 100%;
+}
+
+div.items-page div.item-viewer ul {
+  padding: 0;
+  margin-left: 1.2rem;
+}
+
+div.items-page div.item-viewer blockquote {
+  margin: 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--color-sep);
+}
+
+div.items-page div.item-viewer * {
+  margin-top: 0;
+  margin-bottom: .5rem;
+}
+
+div.items-page div.item-viewer li {
+  margin-bottom: .2rem;
 }
