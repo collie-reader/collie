@@ -139,7 +139,9 @@ function Items(props: Props) {
           <For each={items()}>{(item: api.Item) =>
             <li class={`${item.status == api.ItemStatus.READ ? "lowp" : ""} ${(selectedItem() && selectedItem()?.id == item.id) ? "selected" : ""}`}>
               <strong><a href={item.link} target="_blank"
-                onClick={() => markAs([item], api.ItemStatus.READ)}>{item.title}</a></strong>
+                onClick={() => markAs([item], api.ItemStatus.READ)}>
+                {item.title} <small class="hostname">({new URL(item.link).hostname})</small>
+              </a></strong>
               <small class="row">
                 <span class="sep">on</span> <A href={`/feeds/${item.feed.id}`}>{item.feed.title}</A>
                 <span class="sep"> by</span> {item.author}

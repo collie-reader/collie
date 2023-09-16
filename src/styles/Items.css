@@ -20,6 +20,10 @@ div.items-page div.item-list > ul > li.selected {
   background-color: var(--color-selected);
 }
 
+div.items-page div.item-list > ul > li .hostname {
+  font-weight: normal;
+}
+
 div.items-page div.item-list > ul > li > small {
   display: block;
   font-size: .8rem;
