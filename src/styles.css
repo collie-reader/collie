@@ -2,6 +2,7 @@
   color-scheme: dark;
   --color-fg: #f0f0f0;
   --color-bg: #252526;
+  --color-bg-highlight: #454546;
   --color-link: #007acc;
   --color-selected: #8f8f00;
   --color-sep: #afafaf;
@@ -11,6 +12,7 @@
   color-scheme: light;
   --color-fg: #000000;
   --color-bg: #ffffff;
+  --color-bg-highlight: #f0f0f0;
   --color-link: #005ccc;
   --color-selected: #fff000;
   --color-sep: #9f9f9f;
@@ -20,6 +22,7 @@
   color-scheme: light;
   --color-fg: #f8f8f2;
   --color-bg: #282a36;
+  --color-bg-highlight: #44475a;
   --color-link: #8be9fd;
   --color-selected: #44475a;
   --color-sep: #6272a4;

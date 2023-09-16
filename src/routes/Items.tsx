@@ -31,6 +31,7 @@ function Items(props: Props) {
   const [items, setItems] = createSignal<api.Item[]>([]);
   const [selectedItem, setSelectedItem] = createSignal<api.Item | null>(null);
   const [count, setCount] = createSignal(0);
+  const [viewerBasis, setViewerBasis] = createSignal(200);
 
   const loadItems = async () => {
     const [fetchedCount, fetchedItems] = await Promise.all([
@@ -74,6 +75,26 @@ function Items(props: Props) {
       loadItems(),
     ]);
   }
+
+  const selectItem = (item: api.Item) => {
+    setSelectedItem(item);
+    markAs([item], api.ItemStatus.READ)
+
+    const resize = (e: MouseEvent) => {
+      e.preventDefault();
+      const basis = document.documentElement.clientWidth - e.clientX - 60;
+      if (basis >= 100 && basis < 800) {
+        setViewerBasis(basis);
+      }
+    };
+
+    document.querySelector(".item-viewer-handle")?.addEventListener("mousedown", () => {
+      document.addEventListener("mousemove", resize, false);
+      document.addEventListener("mouseup", () => {
+        document.removeEventListener("mousemove", resize, false);
+      }, false);
+    });
+  };
 
   onMount(async () => {
     const res = await settingApi.readSetting(settingApi.SettingKey.ITEMS_ORDER);
@@ -158,10 +179,7 @@ function Items(props: Props) {
                   <Match when={item.is_saved}><button onClick={() => toggleSave(item)}>Unsave</button></Match>
                 </Switch>
                 <span class="sep"> | </span>
-                <button onClick={() => {
-                  setSelectedItem(item);
-                  markAs([item], api.ItemStatus.READ)
-                }}>Read</button>
+                <button onClick={() => selectItem(item)}>Read</button>
               </small>
             </li>
           }</For>
@@ -181,7 +199,8 @@ function Items(props: Props) {
         </Show>
       </div>
       <Show when={selectedItem()}>
-        <div class="item-viewer scrollable">
+        <div class="item-viewer-handle" />
+        <div class="item-viewer scrollable" style={{ 'flex-basis': `${viewerBasis()}px` }}>
           <h2 class="heading">
             <span>{selectedItem()?.title}</span>
             <button onClick={() => setSelectedItem(null)}>✖</button>
