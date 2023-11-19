@@ -2,7 +2,7 @@
 
 ![](https://user-images.githubusercontent.com/6410412/263000117-70fdfe41-18cf-472a-a038-59d39d8b6e20.png)
 
-Collie is a minimal RSS feed reader application running on your desktop. With Collie, you can:
+Collie is a minimal RSS feed reader application. With Collie, you can:
 
 - subscribe to multiple RSS/Atom feeds to organize your own news feed.
 - receive a real-time notification when a new item is added to the subscribed feed. (By default, it is checked every two minutes.)
