@@ -3,6 +3,7 @@ use std::{
     fmt::{Display, Formatter},
     str::FromStr,
 };
+use std::ops::Deref;
 
 use rusqlite::{Connection, Row};
 use sea_query::{Expr, Query, SqliteQueryBuilder};
@@ -15,11 +16,13 @@ use super::database::Settings;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum SettingKey {
-    PollingFrequency, // seconds
+    PollingFrequency,
+    // seconds
     Notification,
     DbSchemeVersion,
     Theme,
     ItemsOrder,
+    Proxy,
 }
 
 impl Display for SettingKey {
@@ -30,6 +33,7 @@ impl Display for SettingKey {
             Self::DbSchemeVersion => write!(f, "db_scheme_version"),
             Self::Theme => write!(f, "theme"),
             Self::ItemsOrder => write!(f, "items_order"),
+            Self::Proxy => write!(f, "proxy"),
         }
     }
 }
@@ -44,6 +48,7 @@ impl FromStr for SettingKey {
             "db_scheme_version" => Ok(Self::DbSchemeVersion),
             "theme" => Ok(Self::Theme),
             "items_order" => Ok(Self::ItemsOrder),
+            "proxy" => Ok(Self::Proxy),
             _ => Err(Error::InvalidEnumKey(
                 x.to_string(),
                 "SettingKey".to_string(),
@@ -97,8 +102,15 @@ pub fn read(db: &Connection, key: &SettingKey) -> Result<Setting> {
 
     let mut stmt = db.prepare(sql.as_str())?;
     let mut rows = stmt.query(&*values.as_params())?;
-
-    Ok(rows.next()?.map(Setting::from).unwrap())
+    match rows.next()? {
+        None => {
+            Err(Error::Unknown)
+        }
+        row => {
+            Ok(row.map(Setting::from).unwrap())
+        }
+    }
+    // Ok(rows.next()?.map(Setting::from).unwrap())
 }
 
 pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
@@ -110,6 +122,11 @@ pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
         }
         SettingKey::Notification => {
             if arg.value.parse::<bool>().unwrap_or(false) {
+                return Err(Error::Unknown);
+            }
+        }
+        SettingKey::Proxy => {
+            if arg.value.parse::<String>().map(|x| reqwest::Proxy::http(x.deref())).map(|_| false).unwrap_or(true) {
                 return Err(Error::Unknown);
             }
         }

@@ -146,6 +146,7 @@ pub fn migrate(db: &Connection) -> Result<()> {
     let _ = insert_settings(db, "notification", "1");
     let _ = insert_settings(db, "theme", "system");
     let _ = insert_settings(db, "items_order", "ReceivedDateDesc");
+    let _ = insert_settings(db, "proxy", "");
 
     Ok(())
 }

@@ -7,6 +7,7 @@ use tauri::Manager;
 
 use tauri::api::notification::Notification;
 
+
 use crate::models::database::open_connection;
 use crate::models::items::ItemToCreate;
 use crate::models::settings;
@@ -21,7 +22,7 @@ pub fn start(app: &App) {
     let db = open_connection(&app_data_dir).unwrap();
 
     thread::spawn(move || loop {
-        let inserted = create_new_items(&db);
+        let inserted = create_new_items(&db, proxy(&db).as_deref());
         if !inserted.is_empty() {
             if notification(&db) {
                 notify(&app_id, &inserted);
@@ -32,6 +33,17 @@ pub fn start(app: &App) {
 
         thread::sleep(time::Duration::from_secs(polling_frequency(&db)));
     });
+}
+
+fn proxy(db: &Connection) -> Option<String> {
+    match settings::read(db, &SettingKey::Proxy) {
+        Ok(x) => {
+            Some(x.value)
+        }
+        Err(_) => {
+            None
+        }
+    }
 }
 
 fn polling_frequency(db: &Connection) -> u64 {
