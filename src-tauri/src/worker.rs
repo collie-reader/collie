@@ -7,7 +7,6 @@ use tauri::Manager;
 
 use tauri::api::notification::Notification;
 
-
 use crate::models::database::open_connection;
 use crate::models::items::ItemToCreate;
 use crate::models::settings;
@@ -37,12 +36,8 @@ pub fn start(app: &App) {
 
 fn proxy(db: &Connection) -> Option<String> {
     match settings::read(db, &SettingKey::Proxy) {
-        Ok(x) => {
-            Some(x.value)
-        }
-        Err(_) => {
-            None
-        }
+        Ok(x) => Some(x.value),
+        Err(_) => None,
     }
 }
 

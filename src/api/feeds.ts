@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import {readSetting, SettingKey} from "./settings.ts";
 
 export enum FeedStatus {
   SUBSCRIBED = "Subscribed",
@@ -28,8 +27,7 @@ export interface FeedToUpdate {
 
 export async function createFeed(arg: FeedToCreate) {
   try {
-    const proxy = (await readSetting(SettingKey.PROXY))?.value;
-    await invoke("create_feed", { arg, proxy });
+    await invoke("create_feed", { arg });
   } catch (e) {
     // Do nothing
   }

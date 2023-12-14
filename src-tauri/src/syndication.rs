@@ -78,12 +78,8 @@ fn fetch_content(link: &str, _proxy: Option<&str>) -> Result<String> {
 fn fetch_content(link: &str, proxy: Option<&str>) -> Result<String> {
     let client = if let Some(proxy_url) = proxy {
         match reqwest::Proxy::all(proxy_url) {
-            Ok(p) => {
-                reqwest::blocking::Client::builder().proxy(p).build()?
-            }
-            Err(_) => {
-                reqwest::blocking::Client::new()
-            }
+            Ok(p) => reqwest::blocking::Client::builder().proxy(p).build()?,
+            Err(_) => reqwest::blocking::Client::new(),
         }
     } else {
         reqwest::blocking::Client::new()

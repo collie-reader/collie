@@ -1,9 +1,9 @@
 use core::fmt;
+use std::ops::Deref;
 use std::{
     fmt::{Display, Formatter},
     str::FromStr,
 };
-use std::ops::Deref;
 
 use rusqlite::{Connection, Row};
 use sea_query::{Expr, Query, SqliteQueryBuilder};
@@ -16,8 +16,7 @@ use super::database::Settings;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum SettingKey {
-    PollingFrequency,
-    // seconds
+    PollingFrequency, // seconds
     Notification,
     DbSchemeVersion,
     Theme,
@@ -103,14 +102,9 @@ pub fn read(db: &Connection, key: &SettingKey) -> Result<Setting> {
     let mut stmt = db.prepare(sql.as_str())?;
     let mut rows = stmt.query(&*values.as_params())?;
     match rows.next()? {
-        None => {
-            Err(Error::Unknown)
-        }
-        row => {
-            Ok(row.map(Setting::from).unwrap())
-        }
+        None => Err(Error::Unknown),
+        row => Ok(row.map(Setting::from).unwrap()),
     }
-    // Ok(rows.next()?.map(Setting::from).unwrap())
 }
 
 pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
@@ -126,7 +120,13 @@ pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
             }
         }
         SettingKey::Proxy => {
-            if arg.value.parse::<String>().map(|x| reqwest::Proxy::http(x.deref())).map(|_| false).unwrap_or(true) {
+            if arg
+                .value
+                .parse::<String>()
+                .map(|x| reqwest::Proxy::http(x.deref()))
+                .map(|_| false)
+                .unwrap_or(true)
+            {
                 return Err(Error::Unknown);
             }
         }

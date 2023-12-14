@@ -1,5 +1,7 @@
 use tauri::State;
 
+use crate::models::settings;
+use crate::models::settings::SettingKey;
 use crate::{
     models::feeds::{self, Feed, FeedToCreate, FeedToUpdate},
     producer::create_new_items,
@@ -8,21 +10,23 @@ use crate::{
 };
 
 #[tauri::command]
-pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate, proxy: Option<&str>) -> Result<String, String> {
-    let title = match fetch_feed_title(&arg.link, proxy) {
+pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate) -> Result<String, String> {
+    let db = db_state.db.lock().unwrap();
+    let proxy = settings::read(&db, &SettingKey::Proxy)
+        .map(|x| x.value)
+        .ok();
+    let title = match fetch_feed_title(&arg.link, proxy.as_deref()) {
         Ok(title) => title,
         Err(err) => return Err(err.to_string()),
     };
-
     let arg = FeedToCreate {
         title,
         link: arg.link,
     };
 
-    let db = db_state.db.lock().unwrap();
     match feeds::create(&db, &arg) {
         Ok(_) => {
-            let _ = create_new_items(&db,proxy);
+            let _ = create_new_items(&db, proxy.as_deref());
             Ok("New feed added".to_string())
         }
         Err(err) => Err(err.to_string()),
