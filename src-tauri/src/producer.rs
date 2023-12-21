@@ -11,12 +11,12 @@ use crate::{
     syndication::fetch_feed_items,
 };
 
-pub fn create_new_items(db: &Connection) -> Vec<ItemToCreate> {
+pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Vec<ItemToCreate> {
     let pairs = get_links_to_check(db);
 
     let mut inserted = vec![];
     for (feed, link) in pairs {
-        if let Ok(mut items) = fetch_feed_items(&link) {
+        if let Ok(mut items) = fetch_feed_items(&link, proxy) {
             items.sort_by_key(|x| x.published_at);
             inserted.extend(insert_new_items(db, feed, &items));
         };

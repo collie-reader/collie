@@ -6,6 +6,7 @@ export enum SettingKey {
   DB_SCHEME_VERSION = "DbSchemeVersion",
   THEME = "Theme",
   ITEMS_ORDER = "ItemsOrder",
+  PROXY="Proxy"
 }
 
 export interface Setting {

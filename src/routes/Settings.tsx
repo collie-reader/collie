@@ -18,6 +18,7 @@ function Settings() {
     [api.SettingKey.DB_SCHEME_VERSION]: "",
     [api.SettingKey.THEME]: "",
     [api.SettingKey.ITEMS_ORDER]: "",
+    [api.SettingKey.PROXY]: "",
   });
 
   const keyToText = (key: api.SettingKey) => {
@@ -28,6 +29,8 @@ function Settings() {
         return "Notification";
       case api.SettingKey.THEME:
         return "Theme";
+      case api.SettingKey.PROXY:
+        return "Proxy"
       default:
         return "";
     }
@@ -127,6 +130,15 @@ function Settings() {
                   <option  value="dracula" selected={newSettings()[setting.key] === "dracula"}>Dracula</option>
                 </select>
                 {SaveButton(setting, () => location.reload())}
+              </Match>
+              <Match when={setting.key === api.SettingKey.PROXY}>
+                <span><strong>{keyToText(setting.key)}</strong>: </span>
+                <input type="text" value={newSettings()[setting.key]}
+                       onInput={(e) => setNewSettings({
+                         ...newSettings(),
+                         [setting.key]: e.currentTarget.value
+                       })}/>
+                {SaveButton(setting)}
               </Match>
             </Switch>
           </li>

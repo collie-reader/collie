@@ -12,16 +12,16 @@ pub struct RawItem {
     pub published_at: Option<DateTime<FixedOffset>>,
 }
 
-pub fn fetch_feed_title(link: &str) -> Result<String> {
-    let content = fetch_content(link)?;
+pub fn fetch_feed_title(link: &str, proxy: Option<&str>) -> Result<String> {
+    let content = fetch_content(link, proxy)?;
     match content.parse::<Feed>()? {
         Feed::Atom(atom) => Ok(atom.title().to_string()),
         Feed::RSS(rss) => Ok(rss.title().to_string()),
     }
 }
 
-pub fn fetch_feed_items(link: &str) -> Result<Vec<RawItem>> {
-    let content = fetch_content(link)?;
+pub fn fetch_feed_items(link: &str, proxy: Option<&str>) -> Result<Vec<RawItem>> {
+    let content = fetch_content(link, proxy)?;
     match content.parse::<Feed>()? {
         Feed::Atom(atom) => Ok(atom
             .entries()
@@ -69,14 +69,21 @@ pub fn fetch_feed_items(link: &str) -> Result<Vec<RawItem>> {
 }
 
 #[cfg(test)]
-fn fetch_content(link: &str) -> Result<String> {
+fn fetch_content(link: &str, _proxy: Option<&str>) -> Result<String> {
     use std::fs;
     Ok(fs::read_to_string(link)?)
 }
 
 #[cfg(not(test))]
-fn fetch_content(link: &str) -> Result<String> {
-    let client = reqwest::blocking::Client::new();
+fn fetch_content(link: &str, proxy: Option<&str>) -> Result<String> {
+    let client = if let Some(proxy_url) = proxy {
+        match reqwest::Proxy::all(proxy_url) {
+            Ok(p) => reqwest::blocking::Client::builder().proxy(p).build()?,
+            Err(_) => reqwest::blocking::Client::new(),
+        }
+    } else {
+        reqwest::blocking::Client::new()
+    };
     Ok(client
         .get(link)
         .header("User-Agent", "Mozilla/5.0")

@@ -14,19 +14,19 @@ fn fixture(path: &str) -> String {
 
 #[test]
 fn fetch_feed_title_rss() {
-    let title = syndication::fetch_feed_title(&fixture("hnrss-org-frontpage.rss")).unwrap();
+    let title = syndication::fetch_feed_title(&fixture("hnrss-org-frontpage.rss"), None).unwrap();
     assert_eq!(title, "Hacker News: Front Page");
 }
 
 #[test]
 fn fetch_feed_title_atom() {
-    let title = syndication::fetch_feed_title(&fixture("hnrss-org-frontpage.atom")).unwrap();
+    let title = syndication::fetch_feed_title(&fixture("hnrss-org-frontpage.atom"), None).unwrap();
     assert_eq!(title, "Hacker News: Front Page");
 }
 
 #[test]
 fn fetch_feed_items_rss() {
-    let items = syndication::fetch_feed_items(&fixture("hnrss-org-frontpage.rss")).unwrap();
+    let items = syndication::fetch_feed_items(&fixture("hnrss-org-frontpage.rss"), None).unwrap();
     assert_eq!(
         vec![
             RawItem {
@@ -57,7 +57,7 @@ fn fetch_feed_items_rss() {
 
 #[test]
 fn fetch_feed_items_atom() {
-    let items = syndication::fetch_feed_items(&fixture("hnrss-org-frontpage.atom")).unwrap();
+    let items = syndication::fetch_feed_items(&fixture("hnrss-org-frontpage.atom"), None).unwrap();
     assert_eq!(
         vec![
             RawItem {
