@@ -22,6 +22,14 @@ On macOS, you can also install Collie via Homebrew:
 $ brew install parksb/x/collie
 ```
 
+## Screenshots
+
+![](https://user-images.githubusercontent.com/6410412/262967600-4273a958-cb92-427f-9ddc-19446c1b9889.png)
+
+![](https://user-images.githubusercontent.com/6410412/262967611-1edb6675-b56c-4f28-a505-8689d1d7ede6.png)
+
+![](https://user-images.githubusercontent.com/6410412/262967608-063e2cfd-bc82-4aa4-a159-bacda268397d.png)
+
 ## Build
 
 If you want to build Collie from source, you should get code by forking and cloning the git repository or downloading a zip file. After placing the source in your local environment, go to the project directory, and install front-end dependencies using pnpm. (If pnpm is not installed, [install pnpm](https://pnpm.io/installation) first.)
@@ -38,13 +46,11 @@ $ pnpm tauri build
 
 This command builds and installs your own Collie based on the cloned source. To develop and modify the application, learn more about [Tauri](https://tauri.app/).
 
-## Screenshots
+The following diagram illustrates the overview of the architecture of Collie.
 
-![](https://user-images.githubusercontent.com/6410412/262967600-4273a958-cb92-427f-9ddc-19446c1b9889.png)
+![](https://user-images.githubusercontent.com/6410412/292761571-d1afbdc7-b507-4ee9-8616-7673a5107614.svg)
 
-![](https://user-images.githubusercontent.com/6410412/262967611-1edb6675-b56c-4f28-a505-8689d1d7ede6.png)
-
-![](https://user-images.githubusercontent.com/6410412/262967608-063e2cfd-bc82-4aa4-a159-bacda268397d.png)
+If you want to share the features that you developed yourself with others, please feel free to open an issue and send a pull request on this repository. All contributions are welcome :)
 
 ## Background
 
