@@ -15,8 +15,8 @@ pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Vec<ItemToCreat
     let pairs = get_links_to_check(db);
 
     let mut inserted = vec![];
-    for (feed, link) in pairs {
-        if let Ok(mut items) = fetch_feed_items(&link, proxy) {
+    for (feed, link, fetch_old_items) in pairs {
+        if let Ok(mut items) = fetch_feed_items(&link, proxy, fetch_old_items) {
             items.sort_by_key(|x| x.published_at);
             inserted.extend(insert_new_items(db, feed, &items));
         };
@@ -25,7 +25,7 @@ pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Vec<ItemToCreat
     inserted
 }
 
-fn get_links_to_check(db: &Connection) -> Vec<(i32, String)> {
+fn get_links_to_check(db: &Connection) -> Vec<(i32, String, bool)> {
     if let Ok(feeds) = feeds::read_all(db) {
         let current = Utc::now().fixed_offset();
         let filtered = feeds.iter().filter(|x| x.status == FeedStatus::Subscribed);
@@ -34,15 +34,16 @@ fn get_links_to_check(db: &Connection) -> Vec<(i32, String)> {
             .map(|x| {
                 let _ = feeds::update(
                     db,
-                    &FeedToUpdate {
+                    &(FeedToUpdate {
                         id: x.id,
                         title: None,
                         link: None,
                         status: None,
                         checked_at: Some(current),
-                    },
+                        fetch_old_items: Some(x.fetch_old_items),
+                    }),
                 );
-                (x.id, x.link.clone())
+                (x.id, x.link.clone(), x.fetch_old_items.clone())
             })
             .collect()
     } else {

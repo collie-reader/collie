@@ -16,6 +16,7 @@ pub enum Feeds {
     Link,
     Status,
     CheckedAt,
+    FetchOldItems,
 }
 
 #[derive(Iden)]
@@ -65,6 +66,12 @@ pub fn migrate(db: &Connection) -> Result<()> {
                 .default("subscribed"),
         )
         .col(ColumnDef::new(Feeds::CheckedAt).date_time().not_null())
+        .col(
+            ColumnDef::new(Feeds::FetchOldItems)
+                .boolean()
+                .not_null()
+                .default(true),
+        )
         .index(
             Index::create()
                 .unique()
@@ -147,6 +154,7 @@ pub fn migrate(db: &Connection) -> Result<()> {
     let _ = insert_settings(db, "theme", "system");
     let _ = insert_settings(db, "items_order", "ReceivedDateDesc");
     let _ = insert_settings(db, "proxy", "");
+    let _ = insert_settings(db, "fetch_old_items", "1");
 
     Ok(())
 }

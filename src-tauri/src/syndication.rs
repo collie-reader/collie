@@ -20,10 +20,14 @@ pub fn fetch_feed_title(link: &str, proxy: Option<&str>) -> Result<String> {
     }
 }
 
-pub fn fetch_feed_items(link: &str, proxy: Option<&str>) -> Result<Vec<RawItem>> {
+pub fn fetch_feed_items(
+    link: &str,
+    proxy: Option<&str>,
+    fetch_old_items: bool,
+) -> Result<Vec<RawItem>> {
     let content = fetch_content(link, proxy)?;
-    match content.parse::<Feed>()? {
-        Feed::Atom(atom) => Ok(atom
+    let mut items: Vec<RawItem> = match content.parse::<Feed>()? {
+        Feed::Atom(atom) => atom
             .entries()
             .iter()
             .map(|x| RawItem {
@@ -43,8 +47,8 @@ pub fn fetch_feed_items(link: &str, proxy: Option<&str>) -> Result<Vec<RawItem>>
                     .map(|x| x.unwrap().to_string()),
                 published_at: x.published().map(|x| x.with_timezone(&Utc).fixed_offset()),
             })
-            .collect()),
-        Feed::RSS(rss) => Ok(rss
+            .collect(),
+        Feed::RSS(rss) => rss
             .items()
             .iter()
             .map(|x| RawItem {
@@ -64,8 +68,15 @@ pub fn fetch_feed_items(link: &str, proxy: Option<&str>) -> Result<Vec<RawItem>>
                     .filter(std::result::Result::is_ok)
                     .map(std::result::Result::unwrap),
             })
-            .collect()),
+            .collect(),
+    };
+
+    if !fetch_old_items {
+        items.sort_by(|a, b| b.published_at.cmp(&a.published_at));
+        items.truncate(1);
     }
+
+    Ok(items)
 }
 
 #[cfg(test)]

@@ -22,6 +22,7 @@ pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate) -> Result<String
     let arg = FeedToCreate {
         title,
         link: arg.link,
+        fetch_old_items: arg.fetch_old_items,
     };
 
     match feeds::create(&db, &arg) {
