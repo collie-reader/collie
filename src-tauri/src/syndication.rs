@@ -1,4 +1,5 @@
 use chrono::{DateTime, FixedOffset, Utc};
+use scraper::{Html, Selector};
 use std::str::FromStr;
 
 use crate::error::{Error, Result};
@@ -10,6 +11,19 @@ pub struct RawItem {
     pub link: Option<String>,
     pub content: Option<String>,
     pub published_at: Option<DateTime<FixedOffset>>,
+}
+
+pub fn find_feed_link(html_content: &str) -> Result<Option<String>> {
+    let document = Html::parse_document(html_content);
+    let selector = Selector::parse("link[type='application/rss+xml'], link[type='application/atom+xml']").unwrap();
+
+    for element in document.select(&selector) {
+        if let Some(href) = element.value().attr("href") {
+            return Ok(Some(href.to_string()));
+        }
+    }
+
+    Ok(None)
 }
 
 pub fn fetch_feed_title(link: &str, proxy: Option<&str>) -> Result<String> {
@@ -80,13 +94,13 @@ pub fn fetch_feed_items(
 }
 
 #[cfg(test)]
-fn fetch_content(link: &str, _proxy: Option<&str>) -> Result<String> {
+pub fn fetch_content(link: &str, _proxy: Option<&str>) -> Result<String> {
     use std::fs;
     Ok(fs::read_to_string(link)?)
 }
 
 #[cfg(not(test))]
-fn fetch_content(link: &str, proxy: Option<&str>) -> Result<String> {
+pub fn fetch_content(link: &str, proxy: Option<&str>) -> Result<String> {
     let client = if let Some(proxy_url) = proxy {
         match reqwest::Proxy::all(proxy_url) {
             Ok(p) => reqwest::blocking::Client::builder().proxy(p).build()?,
