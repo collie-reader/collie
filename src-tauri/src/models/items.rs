@@ -63,6 +63,12 @@ pub struct Item {
     feed: ItemFeed,
 }
 
+impl Item {
+    pub fn published_at(&self) -> Option<DateTime<FixedOffset>> {
+        Some(self.published_at)
+    }
+}
+
 impl From<&Row<'_>> for Item {
     fn from(row: &Row) -> Self {
         Self {

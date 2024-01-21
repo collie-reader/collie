@@ -26,8 +26,7 @@ fn fetch_feed_title_atom() {
 
 #[test]
 fn fetch_feed_items_rss() {
-    let items =
-        syndication::fetch_feed_items(&fixture("hnrss-org-frontpage.rss"), None, true).unwrap();
+    let items = syndication::fetch_feed_items(&fixture("hnrss-org-frontpage.rss"), None).unwrap();
     assert_eq!(
         vec![
             RawItem {
@@ -58,8 +57,7 @@ fn fetch_feed_items_rss() {
 
 #[test]
 fn fetch_feed_items_atom() {
-    let items =
-        syndication::fetch_feed_items(&fixture("hnrss-org-frontpage.atom"), None, true).unwrap();
+    let items = syndication::fetch_feed_items(&fixture("hnrss-org-frontpage.atom"), None).unwrap();
     assert_eq!(
         vec![
             RawItem {

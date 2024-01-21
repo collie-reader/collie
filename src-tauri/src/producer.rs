@@ -6,7 +6,7 @@ use crate::syndication::RawItem;
 use crate::{
     models::{
         feeds::{self, FeedToUpdate},
-        items::{self, ItemStatus, ItemToCreate},
+        items::{create, read_all, Item, ItemReadOption, ItemStatus, ItemToCreate},
     },
     syndication::fetch_feed_items,
 };
@@ -16,10 +16,39 @@ pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Vec<ItemToCreat
 
     let mut inserted = vec![];
     for (feed, link, fetch_old_items) in pairs {
-        if let Ok(mut items) = fetch_feed_items(&link, proxy, fetch_old_items) {
+        let mut items = fetch_feed_items(&link, proxy).unwrap();
+
+        if !fetch_old_items {
+            let _items = read_all(
+                db,
+                &ItemReadOption {
+                    ids: None,
+                    feed: Some(feed),
+                    status: None,
+                    is_saved: None,
+                    order_by: None,
+                    limit: None,
+                    offset: None,
+                },
+            )
+            .unwrap();
+
+            if _items.is_empty() {
+                items.truncate(1)
+            } else {
+                if let Some(most_recent) = _items.first().and_then(|item| Item::published_at(item))
+                {
+                    items.retain(|item| {
+                        item.published_at
+                            .map_or(false, |published_at| published_at > most_recent)
+                    });
+                }
+            }
+        } else {
             items.sort_by_key(|x| x.published_at);
-            inserted.extend(insert_new_items(db, feed, &items));
-        };
+        }
+
+        inserted.extend(insert_new_items(db, feed, &items));
     }
 
     inserted
@@ -40,7 +69,7 @@ fn get_links_to_check(db: &Connection) -> Vec<(i32, String, bool)> {
                         link: None,
                         status: None,
                         checked_at: Some(current),
-                        fetch_old_items: Some(x.fetch_old_items),
+                        fetch_old_items: None,
                     }),
                 );
                 (x.id, x.link.clone(), x.fetch_old_items)
@@ -71,7 +100,7 @@ fn insert_new_items(db: &Connection, feed: i32, items: &[RawItem]) -> Vec<ItemTo
 
     let mut inserted = vec![];
     for arg in args {
-        if items::create(db, &arg).is_ok() {
+        if create(db, &arg).is_ok() {
             inserted.push(arg);
         }
     }
