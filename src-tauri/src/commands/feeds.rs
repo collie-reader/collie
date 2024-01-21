@@ -11,6 +11,10 @@ use crate::{
 
 #[tauri::command]
 pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate) -> Result<String, String> {
+    if arg.link.is_empty() {
+        return Err("Link cannot be empty".to_string());
+    }
+
     let db = db_state.db.lock().unwrap();
     let proxy = settings::read(&db, &SettingKey::Proxy)
         .map(|x| x.value)
