@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::{Utc, FixedOffset, DateTime};
+use chrono::{DateTime, FixedOffset, Utc};
 use rusqlite::Connection;
 
 use crate::models::feeds::FeedStatus;

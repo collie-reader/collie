@@ -67,7 +67,7 @@ impl Item {
     pub fn id(&self) -> i32 {
         self.id
     }
-    
+
     pub fn published_at(&self) -> Option<DateTime<FixedOffset>> {
         Some(self.published_at)
     }
