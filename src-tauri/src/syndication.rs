@@ -20,7 +20,9 @@ pub fn is_feed(link: &str, proxy: Option<&str>) -> Result<bool> {
 
 pub fn find_feed_link(html_content: &str) -> Result<Option<String>> {
     let document = Html::parse_document(html_content);
-    let selector = Selector::parse("link[type='application/rss+xml'], link[type='application/atom+xml']").unwrap();
+    let selector =
+        Selector::parse("link[type='application/rss+xml'], link[type='application/atom+xml']")
+            .unwrap();
 
     for element in document.select(&selector) {
         if let Some(href) = element.value().attr("href") {
@@ -39,10 +41,7 @@ pub fn fetch_feed_title(link: &str, proxy: Option<&str>) -> Result<String> {
     }
 }
 
-pub fn fetch_feed_items(
-    link: &str,
-    proxy: Option<&str>
-) -> Result<Vec<RawItem>> {
+pub fn fetch_feed_items(link: &str, proxy: Option<&str>) -> Result<Vec<RawItem>> {
     let content = fetch_content(link, proxy)?;
     match content.parse::<Feed>()? {
         Feed::Atom(atom) => Ok(atom

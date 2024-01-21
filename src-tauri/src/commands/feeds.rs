@@ -5,7 +5,7 @@ use crate::models::settings::SettingKey;
 use crate::{
     models::feeds::{self, Feed, FeedToCreate, FeedToUpdate},
     producer::create_new_items,
-    syndication::{fetch_feed_title, fetch_content, find_feed_link, is_feed},
+    syndication::{fetch_content, fetch_feed_title, find_feed_link, is_feed},
     DbState,
 };
 
