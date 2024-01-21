@@ -1,4 +1,6 @@
-use chrono::Utc;
+use std::collections::HashMap;
+
+use chrono::{Utc, FixedOffset, DateTime};
 use rusqlite::Connection;
 
 use crate::models::feeds::FeedStatus;
@@ -6,7 +8,7 @@ use crate::syndication::RawItem;
 use crate::{
     models::{
         feeds::{self, FeedToUpdate},
-        items::{create, read_all, Item, ItemReadOption, ItemStatus, ItemToCreate},
+        items::{self, ItemOrder, ItemReadOption, ItemStatus, ItemToCreate},
     },
     syndication::fetch_feed_items,
 };
@@ -14,35 +16,20 @@ use crate::{
 pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Vec<ItemToCreate> {
     let pairs = get_links_to_check(db);
 
+    let most_recent_items = get_most_recent_items(db);
+
     let mut inserted = vec![];
     for (feed, link, fetch_old_items) in pairs {
         let mut items = fetch_feed_items(&link, proxy).unwrap();
 
         if !fetch_old_items {
-            let _items = read_all(
-                db,
-                &ItemReadOption {
-                    ids: None,
-                    feed: Some(feed),
-                    status: None,
-                    is_saved: None,
-                    order_by: None,
-                    limit: None,
-                    offset: None,
-                },
-            )
-            .unwrap();
-
-            if _items.is_empty() {
-                items.truncate(1)
+            if let Some(most_recent) = most_recent_items.get(&feed) {
+                items.retain(|item| {
+                    item.published_at
+                        .map_or(false, |published_at| published_at > *most_recent)
+                });
             } else {
-                if let Some(most_recent) = _items.first().and_then(|item| Item::published_at(item))
-                {
-                    items.retain(|item| {
-                        item.published_at
-                            .map_or(false, |published_at| published_at > most_recent)
-                    });
-                }
+                items.truncate(1)
             }
         } else {
             items.sort_by_key(|x| x.published_at);
@@ -100,10 +87,33 @@ fn insert_new_items(db: &Connection, feed: i32, items: &[RawItem]) -> Vec<ItemTo
 
     let mut inserted = vec![];
     for arg in args {
-        if create(db, &arg).is_ok() {
+        if items::create(db, &arg).is_ok() {
             inserted.push(arg);
         }
     }
 
     inserted
+}
+
+fn get_most_recent_items(db: &Connection) -> HashMap<i32, DateTime<FixedOffset>> {
+    let opt = ItemReadOption {
+        ids: None,
+        feed: None,
+        status: None,
+        is_saved: None,
+        order_by: Some(ItemOrder::PublishedDateDesc),
+        limit: Some(1),
+        offset: None,
+    };
+
+    let rows = items::read_all(db, &opt).unwrap();
+
+    let mut most_recent_items = HashMap::new();
+    for row in rows {
+        let feed = row.id();
+        let published_at = row.published_at().unwrap();
+        most_recent_items.insert(feed, published_at);
+    }
+
+    most_recent_items
 }
