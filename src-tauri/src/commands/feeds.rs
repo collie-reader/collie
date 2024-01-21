@@ -1,14 +1,11 @@
-use std::str::FromStr;
-
 use tauri::State;
 
 use crate::models::settings;
 use crate::models::settings::SettingKey;
-use crate::syndication::find_feed_link;
 use crate::{
     models::feeds::{self, Feed, FeedToCreate, FeedToUpdate},
     producer::create_new_items,
-    syndication::{self, fetch_feed_title, fetch_content},
+    syndication::{fetch_feed_title, fetch_content, find_feed_link, is_feed},
     DbState,
 };
 
@@ -19,8 +16,7 @@ pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate) -> Result<String
         .map(|x| x.value)
         .ok();
 
-    let is_rss_link = syndication::Feed::from_str(&arg.link).is_ok();
-    let link = if is_rss_link {
+    let link = if is_feed(&arg.link, proxy.as_deref()).unwrap() {
         arg.link.clone()
     } else {
         let html_content = fetch_content(&arg.link, proxy.as_deref()).unwrap();
