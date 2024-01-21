@@ -43,7 +43,7 @@ fn get_links_to_check(db: &Connection) -> Vec<(i32, String, bool)> {
                         fetch_old_items: Some(x.fetch_old_items),
                     }),
                 );
-                (x.id, x.link.clone(), x.fetch_old_items.clone())
+                (x.id, x.link.clone(), x.fetch_old_items)
             })
             .collect()
     } else {
