@@ -16,13 +16,12 @@ use crate::{
 pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Vec<ItemToCreate> {
     let pairs = get_links_to_check(db);
 
-    let most_recent_items = get_most_recent_items(db);
-
     let mut inserted = vec![];
     for (feed, link, fetch_old_items) in pairs {
         let mut items = fetch_feed_items(&link, proxy).unwrap();
 
         if !fetch_old_items {
+            let most_recent_items = get_most_recent_items(db);
             if let Some(most_recent) = most_recent_items.get(&feed) {
                 items.retain(|item| {
                     item.published_at
