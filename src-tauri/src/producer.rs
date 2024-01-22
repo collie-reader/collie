@@ -109,8 +109,8 @@ fn get_most_recent_items(db: &Connection) -> HashMap<i32, DateTime<FixedOffset>>
 
     let mut most_recent_items = HashMap::new();
     for row in rows {
-        let feed = row.id();
-        let published_at = row.published_at().unwrap();
+        let feed = row.id;
+        let published_at = row.published_at;
         most_recent_items.insert(feed, published_at);
     }
 
