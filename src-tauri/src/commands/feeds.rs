@@ -9,10 +9,12 @@ use crate::{
     DbState,
 };
 
+use crate::error::Error;
+
 #[tauri::command]
 pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate) -> Result<String, String> {
     if arg.link.is_empty() {
-        return Err("Link cannot be empty".to_string());
+        return Err(Error::EmptyString.to_string());
     }
 
     let db = db_state.db.lock().unwrap();
@@ -29,7 +31,7 @@ pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate) -> Result<String
             rss_link
         } else {
             // TODO: Notification when RSS feeds cannot be fetched?
-            return Err("No valid RSS/Atom link found".to_string());
+            return Err(Error::InvalidFeedLink(arg.link).to_string());
         }
     };
 

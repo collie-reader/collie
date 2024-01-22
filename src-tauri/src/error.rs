@@ -8,11 +8,17 @@ pub enum Error {
     #[error("invalid key `{0}` for `{1}`")]
     InvalidEnumKey(String, String),
 
+    #[error("invalid feed link `{0}`")]
+    InvalidFeedLink(String),
+
     #[error("forbidden")]
     Forbidden,
 
     #[error("failed to parse syndication feed")]
     SyndicationParsingFailure,
+
+    #[error("empty string")]
+    EmptyString,
 
     #[error("unknown")]
     Unknown,
