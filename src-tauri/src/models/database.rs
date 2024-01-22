@@ -156,33 +156,17 @@ pub fn migrate(db: &Connection) -> Result<()> {
     let _ = insert_settings(db, "proxy", "");
     let _ = insert_settings(db, "fetch_old_items", "1");
 
-    // Add fetch_old_items column to feeds table if it doesn't exist
-    // 0.1.7 and earlier of the database doesn't have this column
-    let mut table_info = db.prepare("PRAGMA table_info(feeds)")?;
-    let mut rows = table_info.query([])?;
+    let add_feeds_columns = Table::alter()
+        .table(Feeds::Table)
+        .add_column_if_not_exists(
+            ColumnDef::new(Feeds::FetchOldItems)
+                .boolean()
+                .not_null()
+                .default(true),
+        )
+        .build(SqliteQueryBuilder);
 
-    let mut has_fetch_old_items_column = false;
-    while let Some(row) = rows.next()? {
-        let name: String = row.get(1)?;
-        if name == "fetch_old_items" {
-            has_fetch_old_items_column = true;
-            break;
-        }
-    }
-
-    if !has_fetch_old_items_column {
-        let add_column = Table::alter()
-            .table(Feeds::Table)
-            .add_column(
-                ColumnDef::new(Feeds::FetchOldItems)
-                    .boolean()
-                    .not_null()
-                    .default(true),
-            )
-            .build(SqliteQueryBuilder);
-
-        db.execute(&add_column, [])?;
-    }
+    db.execute(&add_feeds_columns, [])?;
 
     Ok(())
 }
