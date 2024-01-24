@@ -30,10 +30,9 @@ pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Vec<ItemToCreat
             } else {
                 items.truncate(1)
             }
-        } else {
-            items.sort_by_key(|x| x.published_at);
         }
 
+        items.sort_by_key(|x| x.published_at);
         inserted.extend(insert_new_items(db, feed, &items));
     }
 
@@ -109,7 +108,7 @@ fn get_most_recent_items(db: &Connection) -> HashMap<i32, DateTime<FixedOffset>>
 
     let mut most_recent_items = HashMap::new();
     for row in rows {
-        let feed = row.id;
+        let feed = row.feed.id;
         let published_at = row.published_at;
         most_recent_items.insert(feed, published_at);
     }

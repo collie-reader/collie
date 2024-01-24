@@ -44,9 +44,9 @@ impl FromStr for ItemStatus {
 
 #[derive(Serialize, Debug)]
 pub struct ItemFeed {
-    id: i32,
-    title: String,
-    link: String,
+    pub id: i32,
+    pub title: String,
+    pub link: String,
 }
 
 #[derive(Serialize, Debug)]
