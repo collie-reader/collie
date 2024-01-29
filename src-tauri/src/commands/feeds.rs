@@ -2,10 +2,11 @@ use tauri::State;
 
 use crate::models::settings;
 use crate::models::settings::SettingKey;
+use crate::syndication::Feed as _Feed;
 use crate::{
     models::feeds::{self, Feed, FeedToCreate, FeedToUpdate},
     producer::create_new_items,
-    syndication::{fetch_content, fetch_feed_title, find_feed_link, is_feed},
+    syndication::{fetch_content, fetch_feed_title, find_feed_link},
     DbState,
 };
 
@@ -22,15 +23,15 @@ pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate) -> Result<String
         .map(|x| x.value)
         .ok();
 
-    let link = if is_feed(&arg.link, proxy.as_deref()).unwrap() {
+    let html_content = fetch_content(&arg.link, proxy.as_deref()).unwrap();
+    let is_feed = html_content.parse::<_Feed>().is_ok();
+
+    let link = if is_feed {
         arg.link.clone()
     } else {
-        let html_content = fetch_content(&arg.link, proxy.as_deref()).unwrap();
-        // TODO: Notification if RSS address is converted?
         if let Some(rss_link) = find_feed_link(&html_content).unwrap() {
             rss_link
         } else {
-            // TODO: Notification when RSS feeds cannot be fetched?
             return Err(Error::InvalidFeedLink(arg.link).to_string());
         }
     };

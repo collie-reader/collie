@@ -13,11 +13,6 @@ pub struct RawItem {
     pub published_at: Option<DateTime<FixedOffset>>,
 }
 
-pub fn is_feed(link: &str, proxy: Option<&str>) -> Result<bool> {
-    let content = fetch_content(link, proxy)?;
-    Ok(content.parse::<Feed>().is_ok())
-}
-
 pub fn find_feed_link(html_content: &str) -> Result<Option<String>> {
     let document = Html::parse_document(html_content);
     let selector =
