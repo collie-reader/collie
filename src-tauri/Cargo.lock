@@ -506,7 +506,7 @@ dependencies = [
 
 [[package]]
 name = "collie"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "atom_syndication",
  "chrono",
