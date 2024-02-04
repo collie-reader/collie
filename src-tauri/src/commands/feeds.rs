@@ -28,12 +28,10 @@ pub fn create_feed(db_state: State<DbState>, arg: FeedToCreate) -> Result<String
 
     let link = if is_feed {
         arg.link.clone()
+    } else if let Some(rss_link) = find_feed_link(&html_content).unwrap() {
+        rss_link
     } else {
-        if let Some(rss_link) = find_feed_link(&html_content).unwrap() {
-            rss_link
-        } else {
-            return Err(Error::InvalidFeedLink(arg.link).to_string());
-        }
+        return Err(Error::InvalidFeedLink(arg.link).to_string());
     };
 
     let title = match fetch_feed_title(&link, proxy.as_deref()) {
