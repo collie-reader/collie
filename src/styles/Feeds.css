@@ -15,6 +15,10 @@ div.feeds-page ul.feed-list > li {
   margin-bottom: .5rem;
 }
 
+div.feeds-page ul.feed-list > li > .row {
+  align-items: center;
+}
+
 div.feeds-page ul.feed-list > li > small {
   display: block;
   font-size: .8rem;

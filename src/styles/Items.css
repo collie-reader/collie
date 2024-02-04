@@ -4,6 +4,7 @@ div.items-page div.item-list {
 
 div.items-page div.item-list div.controls-container {
   margin-bottom: 1rem;
+  align-items: center;
 }
 
 div.items-page div.item-list > ul {
