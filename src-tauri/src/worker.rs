@@ -1,5 +1,6 @@
 use regex::Regex;
 use rusqlite::Connection;
+use std::path::PathBuf;
 use std::thread;
 use std::time;
 use tauri::App;
@@ -13,11 +14,9 @@ use crate::models::settings;
 use crate::models::settings::SettingKey;
 use crate::producer::create_new_items;
 
-pub fn start(app: &App) {
+pub fn start(app: &App, app_data_dir: &PathBuf) {
     let app_handle = app.handle();
     let app_id = app.config().tauri.bundle.identifier.clone();
-
-    let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
     let db = open_connection(&app_data_dir).unwrap();
 
     thread::spawn(move || loop {

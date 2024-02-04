@@ -60,7 +60,7 @@ fn main() {
             let _ = models::database::migrate(&db);
 
             app.manage(DbState { db: Mutex::new(db) });
-            worker::start(app);
+            worker::start(app, &app_data_dir);
 
             Ok(())
         })
