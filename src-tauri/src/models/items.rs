@@ -44,23 +44,23 @@ impl FromStr for ItemStatus {
 
 #[derive(Serialize, Debug)]
 pub struct ItemFeed {
-    id: i32,
-    title: String,
-    link: String,
+    pub id: i32,
+    pub title: String,
+    pub link: String,
 }
 
 #[derive(Serialize, Debug)]
 pub struct Item {
-    id: i32,
-    fingerprint: String,
-    author: Option<String>,
-    title: String,
-    description: String,
-    link: String,
-    status: ItemStatus,
-    is_saved: bool,
-    published_at: DateTime<FixedOffset>,
-    feed: ItemFeed,
+    pub id: i32,
+    pub fingerprint: String,
+    pub author: Option<String>,
+    pub title: String,
+    pub description: String,
+    pub link: String,
+    pub status: ItemStatus,
+    pub is_saved: bool,
+    pub published_at: DateTime<FixedOffset>,
+    pub feed: ItemFeed,
 }
 
 impl From<&Row<'_>> for Item {

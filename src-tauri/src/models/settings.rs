@@ -22,6 +22,7 @@ pub enum SettingKey {
     Theme,
     ItemsOrder,
     Proxy,
+    FetchOldItems,
 }
 
 impl Display for SettingKey {
@@ -33,6 +34,7 @@ impl Display for SettingKey {
             Self::Theme => write!(f, "theme"),
             Self::ItemsOrder => write!(f, "items_order"),
             Self::Proxy => write!(f, "proxy"),
+            Self::FetchOldItems => write!(f, "fetch_old_items"),
         }
     }
 }
@@ -48,6 +50,7 @@ impl FromStr for SettingKey {
             "theme" => Ok(Self::Theme),
             "items_order" => Ok(Self::ItemsOrder),
             "proxy" => Ok(Self::Proxy),
+            "fetch_old_items" => Ok(Self::FetchOldItems),
             _ => Err(Error::InvalidEnumKey(
                 x.to_string(),
                 "SettingKey".to_string(),
@@ -114,7 +117,7 @@ pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
                 return Err(Error::Unknown);
             }
         }
-        SettingKey::Notification => {
+        SettingKey::Notification | SettingKey::FetchOldItems => {
             if arg.value.parse::<bool>().unwrap_or(false) {
                 return Err(Error::Unknown);
             }

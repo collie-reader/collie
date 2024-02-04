@@ -11,52 +11,64 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 import "../styles/Feeds.css";
-import * as api from "../api/feeds";
+import * as feedApi from "../api/feeds";
+import * as settingApi from "../api/settings";
 
 function Feeds() {
   const navigate = useNavigate();
 
-  const [feeds, setFeeds] = createSignal<api.Feed[]>([]);
+  const [feeds, setFeeds] = createSignal<feedApi.Feed[]>([]);
   const [linkToCreate, setLinkToCreate] = createSignal("");
   const [idToUpdate, setIdToUpdate] = createSignal<number | null>(null);
   const [titleToUpdate, setTitleToUpdate] = createSignal<string | null>(null);
   const [linkToUpdate, setLinkToUpdate] = createSignal<string | null>(null);
+  const [fetchOldItems, setFetchOldItems] = createSignal<boolean>(true);
 
   const createFeed = async () => {
-    await api.createFeed({ title: "auto", link: linkToCreate() });
-    setFeeds(await api.readAllFeeds());
+    await feedApi.createFeed({ title: "auto", link: linkToCreate(), fetch_old_items: fetchOldItems() });
+    setFeeds(await feedApi.readAllFeeds());
     setLinkToCreate("");
   };
 
   const updateFeed = async (id: number) => {
-    await api.updateFeed({ id, title: titleToUpdate(), link: linkToUpdate() } );
-    setFeeds(await api.readAllFeeds());
+    await feedApi.updateFeed({ id, title: titleToUpdate(), link: linkToUpdate() } );
+    setFeeds(await feedApi.readAllFeeds());
     setIdToUpdate(null);
     setTitleToUpdate(null);
     setLinkToUpdate(null);
   };
 
-  const toggleFeedStatus = async (feed: api.Feed) => {
+  const toggleFeedStatus = async (feed: feedApi.Feed) => {
     switch (feed.status) {
-      case api.FeedStatus.SUBSCRIBED:
-        await api.updateFeed({ id: feed.id, status: api.FeedStatus.UNSUBSCRIBED } );
+      case feedApi.FeedStatus.SUBSCRIBED:
+        await feedApi.updateFeed({ id: feed.id, status: feedApi.FeedStatus.UNSUBSCRIBED } );
         break;
-      case api.FeedStatus.UNSUBSCRIBED:
-        await api.updateFeed({ id: feed.id, status: api.FeedStatus.SUBSCRIBED } );
+      case feedApi.FeedStatus.UNSUBSCRIBED:
+        await feedApi.updateFeed({ id: feed.id, status: feedApi.FeedStatus.SUBSCRIBED } );
     }
 
-    setFeeds(await api.readAllFeeds());
+    setFeeds(await feedApi.readAllFeeds());
   };
 
-  const deleteFeed = async (feed: api.Feed) => {
+  const deleteFeed = async (feed: feedApi.Feed) => {
     if (await confirm(`A feed "${feed.title}" and their all items will be deleted. Are you sure?`)) {
-      await api.deleteFeed(feed.id);
-      setFeeds(await api.readAllFeeds());
+      await feedApi.deleteFeed(feed.id);
+      setFeeds(await feedApi.readAllFeeds());
     }
   };
+
+  const enableFetchOldItems = async (value: boolean) => {
+    const real_value = value === true ? '1' : '0';
+    await settingApi.updateSetting({ key: settingApi.SettingKey.FETCH_OLD_ITEMS, value: real_value });
+    setFetchOldItems(value);
+  }
 
   onMount(async () => {
-    setFeeds(await api.readAllFeeds());
+    const res = await settingApi.readSetting(settingApi.SettingKey.FETCH_OLD_ITEMS);
+    const value = res?.value;
+    setFetchOldItems(value === '1' ? true : false);
+
+    setFeeds(await feedApi.readAllFeeds());
   });
 
   return (
@@ -73,10 +85,14 @@ function Feeds() {
         <input type="text" placeholder="URL" value={linkToCreate()}
           onInput={(e) => setLinkToCreate(e.currentTarget.value)} />
         <button type="submit">Add & Subscribe</button>
+        <span class="row">
+          <input type="checkbox" id="fetch_old_items" name="fetch_old_items" checked={fetchOldItems()} onChange={(e) => enableFetchOldItems(e.currentTarget.checked)} />
+          <label for="fetch_old_items"><small>Fetch old items</small></label>
+        </span>
       </form>
       <ul class="feed-list">
-        <For each={feeds()}>{(feed: api.Feed) =>
-          <li class={`${feed.status == api.FeedStatus.UNSUBSCRIBED ? "lowp" : ""}`}>
+        <For each={feeds()}>{(feed: feedApi.Feed) =>
+          <li class={`${feed.status == feedApi.FeedStatus.UNSUBSCRIBED ? "lowp" : ""}`}>
             <div class="row">
               <Switch>
                 <Match when={feed.id !== idToUpdate()}>
@@ -106,10 +122,10 @@ function Feeds() {
               </Switch>
               <span class="sep"> | </span>
               <Switch>
-                <Match when={feed.status === api.FeedStatus.SUBSCRIBED}>
+                <Match when={feed.status === feedApi.FeedStatus.SUBSCRIBED}>
                   <button onClick={() => toggleFeedStatus(feed)}>Unsubscribe</button>
                 </Match>
-                <Match when={feed.status === api.FeedStatus.UNSUBSCRIBED}>
+                <Match when={feed.status === feedApi.FeedStatus.UNSUBSCRIBED}>
                   <button onClick={() => toggleFeedStatus(feed)}>Subscribe</button>
                 </Match>
               </Switch>

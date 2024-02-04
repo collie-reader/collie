@@ -2,6 +2,10 @@ div.feeds-page form > input {
   width: 250px;
 }
 
+div.feeds-page form > span > input {
+  margin-left: .5rem;
+}
+
 div.feeds-page ul.feed-list {
   padding: 0;
   list-style: none;

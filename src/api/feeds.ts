@@ -11,11 +11,13 @@ export interface Feed {
     link: string,
     status: FeedStatus,
     checked_at: string,
+    fetch_old_items: boolean,
 }
 
 export interface FeedToCreate {
     title: string,
     link: string,
+    fetch_old_items: boolean,
 }
 
 export interface FeedToUpdate {
@@ -23,6 +25,7 @@ export interface FeedToUpdate {
     title?: string | null,
     link?: string | null,
     status?: FeedStatus | null,
+    fetch_old_items?: boolean | null,
 }
 
 export async function createFeed(arg: FeedToCreate) {

@@ -19,6 +19,7 @@ function Settings() {
     [api.SettingKey.THEME]: "",
     [api.SettingKey.ITEMS_ORDER]: "",
     [api.SettingKey.PROXY]: "",
+    [api.SettingKey.FETCH_OLD_ITEMS]: ""
   });
 
   const keyToText = (key: api.SettingKey) => {

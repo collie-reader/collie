@@ -51,6 +51,7 @@ pub struct Feed {
     pub link: String,
     pub status: FeedStatus,
     pub checked_at: DateTime<FixedOffset>,
+    pub fetch_old_items: bool,
 }
 
 impl From<&Row<'_>> for Feed {
@@ -61,6 +62,7 @@ impl From<&Row<'_>> for Feed {
             link: row.get_unwrap("link"),
             status: FeedStatus::from_str(&row.get_unwrap::<&str, String>("status")).unwrap(),
             checked_at: row.get_unwrap("checked_at"),
+            fetch_old_items: row.get_unwrap("fetch_old_items"),
         }
     }
 }
@@ -69,6 +71,7 @@ impl From<&Row<'_>> for Feed {
 pub struct FeedToCreate {
     pub title: String,
     pub link: String,
+    pub fetch_old_items: bool,
 }
 
 #[derive(Deserialize)]
@@ -78,13 +81,24 @@ pub struct FeedToUpdate {
     pub link: Option<String>,
     pub status: Option<FeedStatus>,
     pub checked_at: Option<DateTime<FixedOffset>>,
+    pub fetch_old_items: Option<bool>,
 }
 
 pub fn create(db: &Connection, arg: &FeedToCreate) -> Result<usize> {
     let (sql, values) = Query::insert()
         .into_table(Feeds::Table)
-        .columns([Feeds::Title, Feeds::Link, Feeds::CheckedAt])
-        .values_panic([(*arg.title).into(), (*arg.link).into(), Utc::now().into()])
+        .columns([
+            Feeds::Title,
+            Feeds::Link,
+            Feeds::CheckedAt,
+            Feeds::FetchOldItems,
+        ])
+        .values_panic([
+            (*arg.title).into(),
+            (*arg.link).into(),
+            Utc::now().into(),
+            arg.fetch_old_items.into(),
+        ])
         .build_rusqlite(SqliteQueryBuilder);
 
     Ok(db.execute(sql.as_str(), &*values.as_params())?)
@@ -98,6 +112,7 @@ pub fn read_all(db: &Connection) -> Result<Vec<Feed>> {
             Feeds::Link,
             Feeds::Status,
             Feeds::CheckedAt,
+            Feeds::FetchOldItems,
         ])
         .from(Feeds::Table)
         .build_rusqlite(SqliteQueryBuilder);
@@ -116,6 +131,7 @@ pub fn read(db: &Connection, id: i32) -> Result<Option<Feed>> {
             Feeds::Link,
             Feeds::Status,
             Feeds::CheckedAt,
+            Feeds::FetchOldItems,
         ])
         .from(Feeds::Table)
         .and_where(Expr::col(Feeds::Id).eq(id))
@@ -145,6 +161,10 @@ pub fn update(db: &Connection, arg: &FeedToUpdate) -> Result<usize> {
 
     if let Some(checked_at) = arg.checked_at {
         vals.push((Feeds::CheckedAt, checked_at.into()));
+    }
+
+    if let Some(fetch_old_items) = arg.fetch_old_items {
+        vals.push((Feeds::FetchOldItems, fetch_old_items.into()));
     }
 
     let (sql, values) = Query::update()
