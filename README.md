@@ -5,7 +5,7 @@
 Collie is a minimal RSS feed reader application. With Collie, you can:
 
 - subscribe to multiple RSS/Atom feeds to organize your own news feed.
-- receive a real-time notification when a new item is added to the subscribed feed. (By default, it is checked every two minutes.)
+- receive a real-time notification when a new item is added to the subscribed feed. (By default, it is checked every 5 minutes.)
 - and save the items to read again or later.
 
 All you need is a local machine and the Internet. No virtual machine, no cloud infrastructures, no always-on database, and no account registration with privacy information required.

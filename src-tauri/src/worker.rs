@@ -43,9 +43,9 @@ fn proxy(db: &Connection) -> Option<String> {
 fn polling_frequency(db: &Connection) -> u64 {
     settings::read(db, &SettingKey::PollingFrequency)
         .map(|x| x.value)
-        .unwrap_or("120".to_string())
+        .unwrap_or("300".to_string())
         .parse()
-        .unwrap_or(120)
+        .unwrap_or(300)
 }
 
 fn notification(db: &Connection) -> bool {
