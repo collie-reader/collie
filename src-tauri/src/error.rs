@@ -17,6 +17,12 @@ pub enum Error {
     #[error("failed to parse syndication feed")]
     SyndicationParsingFailure,
 
+    #[error("failed to fetch feed: {0}")]
+    FetchFeedFailure(String),
+
+    #[error("failed to fetch feed items: {0}")]
+    FetchFeedItemsFailure(String),
+
     #[error("empty string")]
     EmptyString,
 

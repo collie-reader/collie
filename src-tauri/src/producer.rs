@@ -13,7 +13,9 @@ use crate::{
     syndication::fetch_feed_items,
 };
 
-pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Result<Vec<ItemToCreate>, String> {
+use crate::error::{Error, Result};
+
+pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Result<Vec<ItemToCreate>> {
     let pairs = get_links_to_check(db);
 
     let mut inserted = vec![];
@@ -25,7 +27,7 @@ pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Result<Vec<Item
             if most_recent_items.is_none() {
                 most_recent_items = match get_most_recent_items(db) {
                     Ok(items) => Some(items),
-                    Err(err) => return Err(format!("Error fetching most recent items: {}", err)),
+                    Err(err) => return Err(Error::FetchFeedItemsFailure(err.to_string())),
                 };
             }
         }
@@ -46,7 +48,7 @@ pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Result<Vec<Item
                 items.sort_by_key(|x| x.published_at);
                 inserted.extend(insert_new_items(db, feed, &items));
             }
-            Err(err) => return Err(format!("Error fetching feed items: {}", err)),
+            Err(err) => return Err(Error::FetchFeedItemsFailure(err.to_string())),
         }
     }
 
@@ -107,13 +109,10 @@ fn insert_new_items(db: &Connection, feed: i32, items: &[RawItem]) -> Vec<ItemTo
     inserted
 }
 
-fn get_most_recent_items(db: &Connection) -> Result<HashMap<i32, DateTime<FixedOffset>>, String> {
+fn get_most_recent_items(db: &Connection) -> Result<HashMap<i32, DateTime<FixedOffset>>> {
     let mut most_recent_items = HashMap::new();
 
-    let feed_ids = match get_all_feed_ids(db) {
-        Ok(ids) => ids,
-        Err(err) => return Err(format!("Failed to fetch feed ids: {}", err)),
-    };
+    let feed_ids = get_all_feed_ids(db)?;
 
     for feed_id in feed_ids {
         let opt = ItemReadOption {
@@ -132,21 +131,16 @@ fn get_most_recent_items(db: &Connection) -> Result<HashMap<i32, DateTime<FixedO
                     most_recent_items.insert(item.feed.id, item.published_at);
                 }
             }
-            Err(err) => {
-                return Err(format!(
-                    "Failed to fetch items for feed {}: {}",
-                    feed_id, err
-                ))
-            }
+            Err(err) => return Err(Error::InvalidValue(err.to_string())),
         }
     }
 
     Ok(most_recent_items)
 }
 
-fn get_all_feed_ids(db: &Connection) -> Result<Vec<i32>, String> {
+fn get_all_feed_ids(db: &Connection) -> Result<Vec<i32>> {
     match feeds::read_all(db) {
         Ok(feeds) => Ok(feeds.iter().map(|x| x.id).collect()),
-        Err(err) => Err(err.to_string()),
+        Err(err) => Err(Error::FetchFeedFailure(err.to_string())),
     }
 }
