@@ -20,13 +20,19 @@ pub fn start(app: &App, app_data_dir: &PathBuf) {
     let db = open_connection(&app_data_dir).unwrap();
 
     thread::spawn(move || loop {
-        let inserted = create_new_items(&db, proxy(&db).as_deref());
-        if !inserted.is_empty() {
-            if notification(&db) {
-                notify(&app_id, &inserted);
-            }
+        match create_new_items(&db, proxy(&db).as_deref()) {
+            Ok(inserted) => {
+                if !inserted.is_empty() {
+                    if notification(&db) {
+                        notify(&app_id, &inserted);
+                    }
 
-            let _ = app_handle.emit_all("feed_updated", ());
+                    let _ = app_handle.emit_all("feed_updated", ());
+                }
+            }
+            Err(err) => {
+                eprintln!("Error fetching new items: {}", err);
+            }
         }
 
         thread::sleep(time::Duration::from_secs(polling_frequency(&db)));

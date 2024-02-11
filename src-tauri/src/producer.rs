@@ -13,30 +13,44 @@ use crate::{
     syndication::fetch_feed_items,
 };
 
-pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Vec<ItemToCreate> {
+pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Result<Vec<ItemToCreate>, String> {
     let pairs = get_links_to_check(db);
 
     let mut inserted = vec![];
-    for (feed, link, fetch_old_items) in pairs {
-        let mut items = fetch_feed_items(&link, proxy).unwrap();
 
+    let mut most_recent_items: Option<HashMap<i32, DateTime<FixedOffset>>> = None;
+
+    for (feed, link, fetch_old_items) in pairs {
         if !fetch_old_items {
-            let most_recent_items = get_most_recent_items(db);
-            if let Some(most_recent) = most_recent_items.get(&feed) {
-                items.retain(|item| {
-                    item.published_at
-                        .map_or(false, |published_at| published_at > *most_recent)
-                });
-            } else {
-                items.truncate(1)
+            if most_recent_items.is_none() {
+                most_recent_items = match get_most_recent_items(db) {
+                    Ok(items) => Some(items),
+                    Err(err) => return Err(format!("Error fetching most recent items: {}", err)),
+                };
             }
         }
 
-        items.sort_by_key(|x| x.published_at);
-        inserted.extend(insert_new_items(db, feed, &items));
+        match fetch_feed_items(&link, proxy) {
+            Ok(mut items) => {
+                if let Some(ref most_recent) = most_recent_items {
+                    if let Some(most_recent) = most_recent.get(&feed) {
+                        items.retain(|item| {
+                            item.published_at
+                                .map_or(false, |published_at| published_at > *most_recent)
+                        });
+                    } else {
+                        items.truncate(1)
+                    }
+                }
+
+                items.sort_by_key(|x| x.published_at);
+                inserted.extend(insert_new_items(db, feed, &items));
+            }
+            Err(err) => return Err(format!("Error fetching feed items: {}", err)),
+        }
     }
 
-    inserted
+    Ok(inserted)
 }
 
 fn get_links_to_check(db: &Connection) -> Vec<(i32, String, bool)> {
@@ -93,25 +107,46 @@ fn insert_new_items(db: &Connection, feed: i32, items: &[RawItem]) -> Vec<ItemTo
     inserted
 }
 
-fn get_most_recent_items(db: &Connection) -> HashMap<i32, DateTime<FixedOffset>> {
-    let opt = ItemReadOption {
-        ids: None,
-        feed: None,
-        status: None,
-        is_saved: None,
-        order_by: Some(ItemOrder::PublishedDateDesc),
-        limit: Some(1),
-        offset: None,
+fn get_most_recent_items(db: &Connection) -> Result<HashMap<i32, DateTime<FixedOffset>>, String> {
+    let mut most_recent_items = HashMap::new();
+
+    let feed_ids = match get_all_feed_ids(db) {
+        Ok(ids) => ids,
+        Err(err) => return Err(format!("Failed to fetch feed ids: {}", err)),
     };
 
-    let rows = items::read_all(db, &opt).unwrap();
+    for feed_id in feed_ids {
+        let opt = ItemReadOption {
+            ids: None,
+            feed: Some(feed_id),
+            status: None,
+            is_saved: None,
+            order_by: Some(ItemOrder::PublishedDateDesc),
+            limit: Some(1),
+            offset: None,
+        };
 
-    let mut most_recent_items = HashMap::new();
-    for row in rows {
-        let feed = row.feed.id;
-        let published_at = row.published_at;
-        most_recent_items.insert(feed, published_at);
+        match items::read_all(db, &opt) {
+            Ok(items) => {
+                if let Some(item) = items.first() {
+                    most_recent_items.insert(item.feed.id, item.published_at);
+                }
+            }
+            Err(err) => {
+                return Err(format!(
+                    "Failed to fetch items for feed {}: {}",
+                    feed_id, err
+                ))
+            }
+        }
     }
 
-    most_recent_items
+    Ok(most_recent_items)
+}
+
+fn get_all_feed_ids(db: &Connection) -> Result<Vec<i32>, String> {
+    match feeds::read_all(db) {
+        Ok(feeds) => Ok(feeds.iter().map(|x| x.id).collect()),
+        Err(err) => Err(err.to_string()),
+    }
 }
