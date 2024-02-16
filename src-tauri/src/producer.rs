@@ -13,7 +13,7 @@ use crate::{
     syndication::fetch_feed_items,
 };
 
-use crate::error::{Error, Result};
+use crate::error::Result;
 
 pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Result<Vec<ItemToCreate>> {
     let pairs = get_links_to_check(db);
@@ -32,10 +32,7 @@ pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Result<Vec<Item
     };
 
     for (feed, link, fetch_old_items) in pairs {
-        let items = match fetch_feed_items(&link, proxy) {
-            Ok(items) => items,
-            Err(err) => return Err(Error::FetchFeedItemsFailure(err.to_string())),
-        };
+        let items = fetch_feed_items(&link, proxy)?;
 
         let mut filtered_items = if !fetch_old_items && most_recent_items.get(&feed).is_none() {
             items
@@ -55,10 +52,8 @@ pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Result<Vec<Item
                 .collect::<Vec<_>>()
         };
 
-        if !filtered_items.is_empty() {
-            filtered_items.sort_by_key(|x| x.published_at);
-            inserted.extend(insert_new_items(db, feed, &filtered_items));
-        }
+        filtered_items.sort_by_key(|x| x.published_at);
+        inserted.extend(insert_new_items(db, feed, &filtered_items));
     }
 
     Ok(inserted)
