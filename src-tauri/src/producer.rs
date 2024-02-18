@@ -13,30 +13,50 @@ use crate::{
     syndication::fetch_feed_items,
 };
 
-pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Vec<ItemToCreate> {
+use crate::error::Result;
+
+pub fn create_new_items(db: &Connection, proxy: Option<&str>) -> Result<Vec<ItemToCreate>> {
     let pairs = get_links_to_check(db);
 
     let mut inserted = vec![];
+
+    let feed_ids_to_check: Vec<i32> = pairs
+        .iter()
+        .filter_map(|(id, _, fetch_old_items)| if !fetch_old_items { Some(*id) } else { None })
+        .collect();
+
+    let most_recent_items = if !feed_ids_to_check.is_empty() {
+        get_most_recent_items(db, &feed_ids_to_check).unwrap_or_default()
+    } else {
+        HashMap::new()
+    };
+
     for (feed, link, fetch_old_items) in pairs {
-        let mut items = fetch_feed_items(&link, proxy).unwrap();
+        let items = fetch_feed_items(&link, proxy)?;
 
-        if !fetch_old_items {
-            let most_recent_items = get_most_recent_items(db);
-            if let Some(most_recent) = most_recent_items.get(&feed) {
-                items.retain(|item| {
-                    item.published_at
-                        .map_or(false, |published_at| published_at > *most_recent)
-                });
-            } else {
-                items.truncate(1)
-            }
-        }
+        let mut filtered_items = if !fetch_old_items && most_recent_items.get(&feed).is_none() {
+            items
+                .into_iter()
+                .max_by_key(|x| x.published_at)
+                .into_iter()
+                .collect()
+        } else {
+            items
+                .into_iter()
+                .filter(|item| {
+                    most_recent_items.get(&feed).map_or(true, |most_recent| {
+                        item.published_at
+                            .map_or(false, |published_at| published_at > *most_recent)
+                    }) || fetch_old_items
+                })
+                .collect::<Vec<_>>()
+        };
 
-        items.sort_by_key(|x| x.published_at);
-        inserted.extend(insert_new_items(db, feed, &items));
+        filtered_items.sort_by_key(|x| x.published_at);
+        inserted.extend(insert_new_items(db, feed, &filtered_items));
     }
 
-    inserted
+    Ok(inserted)
 }
 
 fn get_links_to_check(db: &Connection) -> Vec<(i32, String, bool)> {
@@ -93,25 +113,27 @@ fn insert_new_items(db: &Connection, feed: i32, items: &[RawItem]) -> Vec<ItemTo
     inserted
 }
 
-fn get_most_recent_items(db: &Connection) -> HashMap<i32, DateTime<FixedOffset>> {
-    let opt = ItemReadOption {
-        ids: None,
-        feed: None,
-        status: None,
-        is_saved: None,
-        order_by: Some(ItemOrder::PublishedDateDesc),
-        limit: Some(1),
-        offset: None,
-    };
-
-    let rows = items::read_all(db, &opt).unwrap();
-
+fn get_most_recent_items(
+    db: &Connection,
+    feed_ids: &[i32],
+) -> Result<HashMap<i32, DateTime<FixedOffset>>> {
     let mut most_recent_items = HashMap::new();
-    for row in rows {
-        let feed = row.feed.id;
-        let published_at = row.published_at;
-        most_recent_items.insert(feed, published_at);
+
+    for feed_id in feed_ids {
+        let opt = ItemReadOption {
+            ids: None,
+            feed: Some(*feed_id),
+            status: None,
+            is_saved: None,
+            order_by: Some(ItemOrder::PublishedDateDesc),
+            limit: Some(1),
+            offset: None,
+        };
+
+        if let Some(item) = items::read_all(db, &opt)?.first() {
+            most_recent_items.insert(item.feed.id, item.published_at);
+        }
     }
 
-    most_recent_items
+    Ok(most_recent_items)
 }
