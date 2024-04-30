@@ -64,7 +64,12 @@ function Items(props: Props) {
     const ids = targets.filter(x => x.status !== status).map(x => x.id);
     if (ids.length) {
       await api.markAs(ids, status);
-      await loadItems();
+      if (props.type === ItemType.UNREAD) {
+        setItems(items().map(x => ids.includes(x.id) ? { ...x, status: status } : x));
+        setCount(await api.countItems(opt()));
+      } else {
+        await loadItems();
+      }
     }
   };
 
