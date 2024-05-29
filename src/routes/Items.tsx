@@ -200,6 +200,10 @@ function Items(props: Props) {
             <Show when={(offset() + 1) * LIMIT < count()}>
               <button onClick={() => loadPage(offset() + 1)}>{offset() + 2} →</button>
             </Show>
+            <Show when={items().length && items().some(x => x.status == api.ItemStatus.UNREAD)}>
+              <button onClick={() => markAs(items(), api.ItemStatus.READ)}>
+                Mark this page as read</button>
+            </Show>
           </div>
         </Show>
       </div>
