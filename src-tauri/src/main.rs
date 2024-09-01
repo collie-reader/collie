@@ -1,14 +1,16 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use rusqlite::Connection;
-use std::{fs, path::PathBuf, sync::Mutex};
+use models::database::insert_default_settings;
+use std::{
+    fs,
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 use tauri::Manager;
 
 pub mod models {
     pub mod database;
-    pub mod feeds;
-    pub mod items;
     pub mod settings;
 }
 
@@ -19,18 +21,7 @@ pub mod commands {
 }
 
 pub mod error;
-pub mod producer;
-pub mod syndication;
 pub mod worker;
-
-#[cfg(test)]
-mod tests {
-    mod syndication;
-}
-
-pub struct DbState {
-    db: Mutex<Connection>,
-}
 
 fn main() {
     let _ = tauri::Builder::default()
@@ -56,11 +47,18 @@ fn main() {
             };
 
             fs::create_dir_all(&app_data_dir).unwrap();
-            let db = models::database::open_connection(&app_data_dir).unwrap();
-            let _ = models::database::migrate(&db);
+            let db_file = &app_data_dir.join("collie.db");
+            let db = collie::model::database::open_connection(&db_file).unwrap();
+            let _ = collie::model::database::Migration::new()
+                .table(collie::model::database::feeds_table())
+                .table(collie::model::database::items_table())
+                .table(crate::models::database::settings_table())
+                .migrate(&db);
+            let _ = insert_default_settings(&db);
 
-            app.manage(DbState { db: Mutex::new(db) });
-            worker::start(app, &app_data_dir);
+            let conn = Arc::new(Mutex::new(db));
+            app.manage(conn.clone());
+            worker::start(conn.clone(), app);
 
             Ok(())
         })

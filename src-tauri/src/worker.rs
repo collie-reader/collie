@@ -1,61 +1,59 @@
 use regex::Regex;
-use rusqlite::Connection;
-use std::path::PathBuf;
-use std::thread;
-use std::time;
+use std::sync::Arc;
 use tauri::App;
 use tauri::Manager;
-
 use tauri::api::notification::Notification;
+use collie::model::database::DbConnection;
+use collie::model::item::ItemToCreate;
+use collie::producer::worker::create_new_items;
 
-use crate::models::database::open_connection;
-use crate::models::items::ItemToCreate;
 use crate::models::settings;
 use crate::models::settings::SettingKey;
-use crate::producer::create_new_items;
 
-pub fn start(app: &App, app_data_dir: &PathBuf) {
+#[tokio::main]
+pub async fn start(conn: Arc<DbConnection>, app: &App) {
     let app_handle = app.handle();
     let app_id = app.config().tauri.bundle.identifier.clone();
-    let db = open_connection(&app_data_dir).unwrap();
 
-    thread::spawn(move || loop {
-        match create_new_items(&db, proxy(&db).as_deref()) {
-            Ok(inserted) => {
-                if !inserted.is_empty() {
-                    if notification(&db) {
-                        notify(&app_id, &inserted);
+    tauri::async_runtime::spawn(async move {
+        loop {
+            match create_new_items(&conn, proxy(&conn).as_deref()).await {
+                Ok(inserted) => {
+                    if !inserted.is_empty() {
+                        if notification(&conn) {
+                            notify(&app_id, &inserted);
+                        }
+
+                        let _ = app_handle.emit_all("feed_updated", ());
                     }
-
-                    let _ = app_handle.emit_all("feed_updated", ());
+                }
+                Err(err) => {
+                    eprintln!("Error fetching new items: {}", err);
                 }
             }
-            Err(err) => {
-                eprintln!("Error fetching new items: {}", err);
-            }
-        }
 
-        thread::sleep(time::Duration::from_secs(polling_frequency(&db)));
+            tokio::time::sleep(std::time::Duration::from_secs(polling_frequency(&conn))).await;
+        }
     });
 }
 
-fn proxy(db: &Connection) -> Option<String> {
-    match settings::read(db, &SettingKey::Proxy) {
+fn proxy(conn: &DbConnection) -> Option<String> {
+    match settings::read(conn, &SettingKey::Proxy) {
         Ok(x) => Some(x.value),
         Err(_) => None,
     }
 }
 
-fn polling_frequency(db: &Connection) -> u64 {
-    settings::read(db, &SettingKey::PollingFrequency)
+fn polling_frequency(conn: &DbConnection) -> u64 {
+    settings::read(conn, &SettingKey::PollingFrequency)
         .map(|x| x.value)
         .unwrap_or("300".to_string())
         .parse()
         .unwrap_or(300)
 }
 
-fn notification(db: &Connection) -> bool {
-    settings::read(db, &SettingKey::Notification)
+fn notification(conn: &DbConnection) -> bool {
+    settings::read(conn, &SettingKey::Notification)
         .map(|x| x.value)
         .unwrap_or("1".to_string())
         .parse()

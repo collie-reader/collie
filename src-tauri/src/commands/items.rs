@@ -1,41 +1,47 @@
+use collie::model::database::DbConnection;
+use collie::model::item::{self, Item, ItemReadOption, ItemToUpdate, ItemToUpdateAll};
+use std::sync::Arc;
 use tauri::State;
 
-use crate::{
-    models::items::{self, Item, ItemReadOption, ItemToUpdate, ItemToUpdateAll},
-    DbState,
-};
-
 #[tauri::command]
-pub fn read_all_items(db_state: State<DbState>, opt: ItemReadOption) -> Result<Vec<Item>, String> {
-    let db = db_state.db.lock().unwrap();
-    match items::read_all(&db, &opt) {
+pub fn read_all_items(
+    state: State<'_, Arc<DbConnection>>,
+    opt: ItemReadOption,
+) -> Result<Vec<Item>, String> {
+    match item::read_all(&state, &opt) {
         Ok(items) => Ok(items),
         Err(err) => Err(err.to_string()),
     }
 }
 
 #[tauri::command]
-pub fn count_all_items(db_state: State<DbState>, opt: ItemReadOption) -> Result<i64, String> {
-    let db = db_state.db.lock().unwrap();
-    match items::count_all(&db, &opt) {
+pub fn count_all_items(
+    state: State<'_, Arc<DbConnection>>,
+    opt: ItemReadOption,
+) -> Result<i64, String> {
+    match item::count_all(&state, &opt) {
         Ok(count) => Ok(count),
         Err(err) => Err(err.to_string()),
     }
 }
 
 #[tauri::command]
-pub fn update_item(db_state: State<DbState>, arg: ItemToUpdate) -> Result<String, String> {
-    let db = db_state.db.lock().unwrap();
-    match items::update(&db, &arg) {
+pub fn update_item(
+    state: State<'_, Arc<DbConnection>>,
+    arg: ItemToUpdate,
+) -> Result<String, String> {
+    match item::update(&state, &arg) {
         Ok(_) => Ok("Item updated".to_string()),
         Err(err) => Err(err.to_string()),
     }
 }
 
 #[tauri::command]
-pub fn update_items(db_state: State<DbState>, arg: ItemToUpdateAll) -> Result<String, String> {
-    let db = db_state.db.lock().unwrap();
-    match items::update_all(&db, &arg) {
+pub fn update_items(
+    state: State<'_, Arc<DbConnection>>,
+    arg: ItemToUpdateAll,
+) -> Result<String, String> {
+    match item::update_all(&state, &arg) {
         Ok(_) => Ok("Items updated".to_string()),
         Err(err) => Err(err.to_string()),
     }

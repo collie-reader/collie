@@ -1,14 +1,14 @@
+use collie::model::database::DbConnection;
 use core::fmt;
+use rusqlite::Row;
+use sea_query::{Expr, Query, SqliteQueryBuilder};
+use sea_query_rusqlite::RusqliteBinder;
+use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 use std::{
     fmt::{Display, Formatter},
     str::FromStr,
 };
-
-use rusqlite::{Connection, Row};
-use sea_query::{Expr, Query, SqliteQueryBuilder};
-use sea_query_rusqlite::RusqliteBinder;
-use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
 
@@ -80,12 +80,13 @@ pub struct SettingToUpdate {
     pub value: String,
 }
 
-pub fn read_all(db: &Connection) -> Result<Vec<Setting>> {
+pub fn read_all(conn: &DbConnection) -> Result<Vec<Setting>> {
     let (sql, values) = Query::select()
         .columns([Settings::Key, Settings::Value])
         .from(Settings::Table)
         .build_rusqlite(SqliteQueryBuilder);
 
+    let db = conn.lock().unwrap();
     let mut stmt = db.prepare(sql.as_str())?;
     let rows = stmt.query_map(&*values.as_params(), |x| Ok(Setting::from(x)))?;
 
@@ -94,7 +95,7 @@ pub fn read_all(db: &Connection) -> Result<Vec<Setting>> {
         .collect::<Vec<Setting>>())
 }
 
-pub fn read(db: &Connection, key: &SettingKey) -> Result<Setting> {
+pub fn read(conn: &DbConnection, key: &SettingKey) -> Result<Setting> {
     let (sql, values) = Query::select()
         .columns([Settings::Key, Settings::Value])
         .from(Settings::Table)
@@ -102,6 +103,7 @@ pub fn read(db: &Connection, key: &SettingKey) -> Result<Setting> {
         .limit(1)
         .build_rusqlite(SqliteQueryBuilder);
 
+    let db = conn.lock().unwrap();
     let mut stmt = db.prepare(sql.as_str())?;
     let mut rows = stmt.query(&*values.as_params())?;
     match rows.next()? {
@@ -110,7 +112,7 @@ pub fn read(db: &Connection, key: &SettingKey) -> Result<Setting> {
     }
 }
 
-pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
+pub fn update(conn: &DbConnection, arg: &SettingToUpdate) -> Result<usize> {
     match arg.key {
         SettingKey::PollingFrequency => {
             if arg.value.parse::<i32>().map(|x| x < 30).unwrap_or(false) {
@@ -143,5 +145,6 @@ pub fn update(db: &Connection, arg: &SettingToUpdate) -> Result<usize> {
         .and_where(Expr::col(Settings::Key).eq(arg.key.to_string()))
         .build_rusqlite(SqliteQueryBuilder);
 
+    let db = conn.lock().unwrap();
     Ok(db.execute(sql.as_str(), &*values.as_params())?)
 }
