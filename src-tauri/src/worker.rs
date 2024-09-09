@@ -1,11 +1,11 @@
-use regex::Regex;
-use std::sync::Arc;
-use tauri::App;
-use tauri::Manager;
-use tauri::api::notification::Notification;
 use collie::model::database::DbConnection;
 use collie::model::item::ItemToCreate;
 use collie::producer::worker::create_new_items;
+use regex::Regex;
+use std::sync::Arc;
+use tauri::api::notification::Notification;
+use tauri::App;
+use tauri::Manager;
 
 use crate::models::settings;
 use crate::models::settings::SettingKey;

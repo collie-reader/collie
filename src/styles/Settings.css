@@ -18,3 +18,7 @@ div.settings-page label,
 div.settings-page button {
   margin-left: 5px;
 }
+
+div.settings-page .disabled {
+  color: var(--color-sep);
+}

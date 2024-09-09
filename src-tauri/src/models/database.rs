@@ -28,13 +28,14 @@ pub fn settings_table() -> Vec<TableStatement> {
 }
 
 pub fn insert_default_settings(db: &Connection) -> Result<()> {
-    insert_settings(db, "db_scheme_version", "1")?;
-    insert_settings(db, "polling_frequency", "300")?;
-    insert_settings(db, "notification", "1")?;
-    insert_settings(db, "theme", "system")?;
-    insert_settings(db, "items_order", "ReceivedDateDesc")?;
-    insert_settings(db, "proxy", "")?;
-    insert_settings(db, "fetch_old_items", "1")?;
+    let _ = insert_settings(db, "db_scheme_version", "1");
+    let _ = insert_settings(db, "polling_frequency", "300");
+    let _ = insert_settings(db, "notification", "1");
+    let _ = insert_settings(db, "theme", "system");
+    let _ = insert_settings(db, "items_order", "ReceivedDateDesc");
+    let _ = insert_settings(db, "proxy", "");
+    let _ = insert_settings(db, "fetch_old_items", "1");
+    let _ = insert_settings(db, "server_url", "");
 
     Ok(())
 }

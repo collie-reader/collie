@@ -19,7 +19,8 @@ function Settings() {
     [api.SettingKey.THEME]: "",
     [api.SettingKey.ITEMS_ORDER]: "",
     [api.SettingKey.PROXY]: "",
-    [api.SettingKey.FETCH_OLD_ITEMS]: ""
+    [api.SettingKey.FETCH_OLD_ITEMS]: "",
+    [api.SettingKey.SERVER_URL]: "",
   });
 
   const keyToText = (key: api.SettingKey) => {
@@ -32,6 +33,8 @@ function Settings() {
         return "Theme";
       case api.SettingKey.PROXY:
         return "Proxy"
+      case api.SettingKey.SERVER_URL:
+        return "Server URL";
       default:
         return "";
     }
@@ -77,7 +80,7 @@ function Settings() {
   onMount(async () => {
     const fetchLatestVersion = async (): Promise<string> => {
       const res = await fetch("https://api.github.com/repos/parksb/collie/releases/latest");
-      return (await res.json())['tag_name'];
+      return (await res.json())["tag_name"];
     };
 
     const [fetchedVersion, fetchedLatestVersion, fetchedDataDir] = await Promise.all([
@@ -111,6 +114,9 @@ function Settings() {
                   onInput={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })} /> <span>seconds.</span>
                 {SaveButton(setting)}
                 <small>The seconds cannot be less than 30. A feed that update too quickly may overwhelm you.</small>
+                <Show when={settings().find(x => x.key == api.SettingKey.SERVER_URL)?.value}>
+                  <small>This option sets the polling frequency for the given server, not the feeds.</small>
+                </Show>
               </Match>
               <Match when={setting.key === api.SettingKey.NOTIFICATION}>
                 <span><strong>{keyToText(setting.key)}</strong>: Do you want to be notified when new items are arrived?</span>
@@ -140,6 +146,17 @@ function Settings() {
                          [setting.key]: e.currentTarget.value
                        })}/>
                 {SaveButton(setting)}
+              </Match>
+              <Match when={setting.key === api.SettingKey.SERVER_URL}>
+                <span><strong>{keyToText(setting.key)}</strong>: </span>
+                <input type="text" value={newSettings()[setting.key]}
+                       onInput={(e) => setNewSettings({
+                         ...newSettings(),
+                         [setting.key]: e.currentTarget.value
+                       })}/>
+                {SaveButton(setting)}
+                <small>Enter the URL to get data(items, feeds, etc.) from the Collie server.</small>
+                <small>Locally stored data will not be deleted, so if you want to revert to using local data, clear the server URL.</small>
               </Match>
             </Switch>
           </li>

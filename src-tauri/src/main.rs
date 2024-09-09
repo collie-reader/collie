@@ -48,7 +48,7 @@ fn main() {
 
             fs::create_dir_all(&app_data_dir).unwrap();
             let db_file = &app_data_dir.join("collie.db");
-            let db = collie::model::database::open_connection(&db_file).unwrap();
+            let db = collie::model::database::open_connection(db_file).unwrap();
             let _ = collie::model::database::Migration::new()
                 .table(collie::model::database::feeds_table())
                 .table(collie::model::database::items_table())
