@@ -1,4 +1,4 @@
-use collie::model::database::DbConnection;
+use collie::repository::database::DbConnection;
 use core::fmt;
 use rusqlite::Row;
 use sea_query::{Expr, Query, SqliteQueryBuilder};
@@ -23,7 +23,7 @@ pub enum SettingKey {
     ItemsOrder,
     Proxy,
     FetchOldItems,
-    ServerUrl,
+    UpstreamUrl,
 }
 
 impl Display for SettingKey {
@@ -36,7 +36,7 @@ impl Display for SettingKey {
             Self::ItemsOrder => write!(f, "items_order"),
             Self::Proxy => write!(f, "proxy"),
             Self::FetchOldItems => write!(f, "fetch_old_items"),
-            Self::ServerUrl => write!(f, "server_url"),
+            Self::UpstreamUrl => write!(f, "upstream_url"),
         }
     }
 }
@@ -53,7 +53,7 @@ impl FromStr for SettingKey {
             "items_order" => Ok(Self::ItemsOrder),
             "proxy" => Ok(Self::Proxy),
             "fetch_old_items" => Ok(Self::FetchOldItems),
-            "server_url" => Ok(Self::ServerUrl),
+            "upstream_url" => Ok(Self::UpstreamUrl),
             _ => Err(Error::InvalidEnumKey(
                 x.to_string(),
                 "SettingKey".to_string(),

@@ -20,7 +20,7 @@ function Settings() {
     [api.SettingKey.ITEMS_ORDER]: "",
     [api.SettingKey.PROXY]: "",
     [api.SettingKey.FETCH_OLD_ITEMS]: "",
-    [api.SettingKey.SERVER_URL]: "",
+    [api.SettingKey.UPSTREAM_URL]: "",
   });
 
   const keyToText = (key: api.SettingKey) => {
@@ -33,8 +33,8 @@ function Settings() {
         return "Theme";
       case api.SettingKey.PROXY:
         return "Proxy"
-      case api.SettingKey.SERVER_URL:
-        return "Server URL";
+      case api.SettingKey.UPSTREAM_URL:
+        return "Upstream URL";
       default:
         return "";
     }
@@ -114,8 +114,8 @@ function Settings() {
                   onInput={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })} /> <span>seconds.</span>
                 {SaveButton(setting)}
                 <small>The seconds cannot be less than 30. A feed that update too quickly may overwhelm you.</small>
-                <Show when={settings().find(x => x.key == api.SettingKey.SERVER_URL)?.value}>
-                  <small>This option sets the polling frequency for the given server, not the feeds.</small>
+                <Show when={settings().find(x => x.key == api.SettingKey.UPSTREAM_URL)?.value}>
+                  <small>This option sets the polling frequency for the given upstream, not the feeds.</small>
                 </Show>
               </Match>
               <Match when={setting.key === api.SettingKey.NOTIFICATION}>
@@ -147,7 +147,7 @@ function Settings() {
                        })}/>
                 {SaveButton(setting)}
               </Match>
-              <Match when={setting.key === api.SettingKey.SERVER_URL}>
+              <Match when={setting.key === api.SettingKey.UPSTREAM_URL}>
                 <span><strong>{keyToText(setting.key)}</strong>: </span>
                 <input type="text" value={newSettings()[setting.key]}
                        onInput={(e) => setNewSettings({
@@ -155,8 +155,8 @@ function Settings() {
                          [setting.key]: e.currentTarget.value
                        })}/>
                 {SaveButton(setting)}
-                <small>Enter the URL to get data(items, feeds, etc.) from the Collie server.</small>
-                <small>Locally stored data will not be deleted, so if you want to revert to using local data, clear the server URL.</small>
+                <small>Enter the URL to get data(items, feeds, etc.) from the upstream.</small>
+                <small>Locally stored data will not be deleted, so if you want to revert to using local data, clear the upstream URL.</small>
               </Match>
             </Switch>
           </li>

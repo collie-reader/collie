@@ -35,7 +35,7 @@ pub fn insert_default_settings(db: &Connection) -> Result<()> {
     let _ = insert_settings(db, "items_order", "ReceivedDateDesc");
     let _ = insert_settings(db, "proxy", "");
     let _ = insert_settings(db, "fetch_old_items", "1");
-    let _ = insert_settings(db, "server_url", "");
+    let _ = insert_settings(db, "upstream_url", "");
 
     Ok(())
 }

@@ -8,7 +8,7 @@ export enum SettingKey {
   ITEMS_ORDER = "ItemsOrder",
   PROXY="Proxy",
   FETCH_OLD_ITEMS = "FetchOldItems",
-  SERVER_URL = "ServerUrl",
+  UPSTREAM_URL = "UpstreamUrl",
 }
 
 export interface Setting {

@@ -1,8 +1,7 @@
-use collie::model::database::DbConnection;
 use collie::model::item::ItemToCreate;
-use collie::producer::worker::create_new_items;
+use collie::repository::database::DbConnection;
+use collie::worker::Worker;
 use regex::Regex;
-use std::sync::Arc;
 use tauri::api::notification::Notification;
 use tauri::App;
 use tauri::Manager;
@@ -11,13 +10,14 @@ use crate::models::settings;
 use crate::models::settings::SettingKey;
 
 #[tokio::main]
-pub async fn start(conn: Arc<DbConnection>, app: &App) {
+pub async fn start(conn: DbConnection, app: &App) {
+    let worker = Worker::new(conn.clone(), proxy(&conn));
     let app_handle = app.handle();
     let app_id = app.config().tauri.bundle.identifier.clone();
 
     tauri::async_runtime::spawn(async move {
         loop {
-            match create_new_items(&conn, proxy(&conn).as_deref()).await {
+            match worker.execute().await {
                 Ok(inserted) => {
                     if !inserted.is_empty() {
                         if notification(&conn) {

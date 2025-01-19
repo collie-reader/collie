@@ -48,10 +48,10 @@ fn main() {
 
             fs::create_dir_all(&app_data_dir).unwrap();
             let db_file = &app_data_dir.join("collie.db");
-            let db = collie::model::database::open_connection(db_file).unwrap();
-            let _ = collie::model::database::Migration::new()
-                .table(collie::model::database::feeds_table())
-                .table(collie::model::database::items_table())
+            let db = collie::repository::database::open_connection(db_file).unwrap();
+            let _ = collie::repository::database::Migration::new()
+                .table(collie::repository::database::feeds_table())
+                .table(collie::repository::database::items_table())
                 .table(crate::models::database::settings_table())
                 .migrate(&db);
             let _ = insert_default_settings(&db);
