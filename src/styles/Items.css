@@ -1,5 +1,5 @@
 div.items-page div.item-list {
-  flex: 3;
+  flex: 1;
 }
 
 div.items-page div.item-list div.controls-container {
@@ -7,25 +7,25 @@ div.items-page div.item-list div.controls-container {
   align-items: center;
 }
 
-div.items-page div.item-list > ul {
+div.items-page div.item-list>ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-div.items-page div.item-list > ul > li {
+div.items-page div.item-list>ul>li {
   margin-bottom: .5rem;
 }
 
-div.items-page div.item-list > ul > li.selected {
+div.items-page div.item-list>ul>li.selected {
   background-color: var(--color-selected);
 }
 
-div.items-page div.item-list > ul > li .hostname {
+div.items-page div.item-list>ul>li .hostname {
   font-weight: normal;
 }
 
-div.items-page div.item-list > ul > li > small {
+div.items-page div.item-list>ul>li>small {
   display: block;
   font-size: .8rem;
   margin-top: -3px;
@@ -62,7 +62,7 @@ div.items-page div.item-viewer .heading {
   font-size: 1.5rem;
 }
 
-div.items-page div.item-viewer .heading > button {
+div.items-page div.item-viewer .heading>button {
   font-size: 1.2rem;
   margin-left: 5px;
 }
