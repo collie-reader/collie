@@ -1,6 +1,6 @@
 {
   "name": "collie",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "A minimal RSS reader just for you",
   "scripts": {
     "start": "vite",
