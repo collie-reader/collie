@@ -53,7 +53,7 @@ function Items(props: Props) {
   const toggleSave = async (item: api.Item) => {
     if (item.is_saved) {
       await api.unsave(item.id)
-    } else{
+    } else {
       await api.save(item.id)
     }
 
@@ -88,7 +88,7 @@ function Items(props: Props) {
     const resize = (e: MouseEvent) => {
       e.preventDefault();
       const basis = document.documentElement.clientWidth - e.clientX - 60;
-      if (basis >= 100 && basis < 800) {
+      if (basis >= 100 && basis < 1080) {
         setViewerBasis(basis);
       }
     };
