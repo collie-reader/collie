@@ -85,10 +85,18 @@ function Items(props: Props) {
     setSelectedItem(item);
     markAs([item], api.ItemStatus.READ)
 
+
+    // Resize the view of the panel based on the user's screen size instead of a hard coded value
     const resize = (e: MouseEvent) => {
       e.preventDefault();
       const basis = document.documentElement.clientWidth - e.clientX - 60;
-      if (basis >= 100 && basis < 1080) {
+
+      // Note: Can only resize up to 75% of the screen for all screen size
+      const checkMaxSize = Math.floor(document.documentElement.clientWidth * 0.75);
+
+      // The global minimum size stays at 100px.
+      // However, larger screen can now resize beyond the previously set upper limit
+      if (basis >= 100 && basis < checkMaxSize) {
         setViewerBasis(basis);
       }
     };
