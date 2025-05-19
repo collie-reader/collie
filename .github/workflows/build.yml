@@ -7,6 +7,12 @@ on:
     branches:
       - '**'
 
+# On any PR branch, cancel active workflows if new code is pushed to the same head_ref (i.e., the same PR).
+# Fallback to github.run_id for non-PRs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   build:
     strategy:
