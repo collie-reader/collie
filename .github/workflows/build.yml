@@ -86,7 +86,7 @@ jobs:
         with:
           reporter: 'github-pr-check'
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: src-tauri
+          args: --manifest-path src-tauri/Cargo.toml
 
   semver:
     runs-on: ubuntu-latest
@@ -102,8 +102,7 @@ jobs:
       - name: cargo-semver-checks
         uses: obi1kenobi/cargo-semver-checks-action@v2
         with:
-          args: ""
-          working-directory: src-tauri
+          args: --manifest-path src-tauri/Cargo.toml
 
   doc:
     # run docs generation on nightly rather than stable
