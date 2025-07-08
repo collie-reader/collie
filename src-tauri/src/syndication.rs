@@ -57,7 +57,10 @@ pub fn fetch_feed_items(link: &str, proxy: Option<&str>) -> Result<Vec<RawItem>>
                     .map(atom_syndication::Content::value)
                     .filter(std::option::Option::is_some)
                     .map(|x| x.unwrap().to_string()),
-                published_at: x.published().or(Some(x.updated())).map(|x| x.with_timezone(&Utc).fixed_offset()),
+                published_at: x
+                    .published()
+                    .or(Some(x.updated()))
+                    .map(|x| x.with_timezone(&Utc).fixed_offset()),
             })
             .collect()),
         Feed::RSS(rss) => Ok(rss
