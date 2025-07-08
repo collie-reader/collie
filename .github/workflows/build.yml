@@ -153,6 +153,9 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.msrv }}
+      - name: Generate lockfile with Rust ${{ matrix.msrv }}
+        run: cargo +${{ matrix.msrv }} generate-lockfile
+        working-directory: src-tauri
       - name: cargo +${{ matrix.msrv }} check
         run: cargo check --locked
         working-directory: src-tauri
