@@ -57,6 +57,8 @@ jobs:
           components: rustfmt
       - name: cargo fmt --check
         run: cargo fmt --check
+        working-directory: src-tauri
+
   clippy:
     runs-on: ubuntu-latest
     name: ${{ matrix.toolchain }} / clippy
@@ -82,6 +84,8 @@ jobs:
         with:
           reporter: 'github-pr-check'
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: src-tauri
+
   semver:
     runs-on: ubuntu-latest
     name: semver
@@ -95,6 +99,10 @@ jobs:
           components: rustfmt
       - name: cargo-semver-checks
         uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          args: ""
+          working-directory: src-tauri
+
   doc:
     # run docs generation on nightly rather than stable
     runs-on: ubuntu-latest
@@ -109,6 +117,8 @@ jobs:
         uses: dtolnay/install@cargo-docs-rs
       - name: cargo docs-rs
         run: cargo docs-rs
+        working-directory: src-tauri
+
   hack:
     # cargo-hack checks combinations of feature flags to ensure that features are all additive
     # which is required for feature unification
@@ -125,6 +135,8 @@ jobs:
       # --feature-powerset runs for every combination of features; no target specifier
       - name: cargo hack
         run: cargo hack --feature-powerset check
+        working-directory: src-tauri
+
   msrv:
     # check that we can build using the minimal rust version that is specified by this crate
     runs-on: ubuntu-latest
@@ -142,3 +154,4 @@ jobs:
           toolchain: ${{ matrix.msrv }}
       - name: cargo +${{ matrix.msrv }} check
         run: cargo check
+        working-directory: src-tauri
