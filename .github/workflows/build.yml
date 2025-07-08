@@ -104,22 +104,6 @@ jobs:
         with:
           manifest-path: src-tauri/Cargo.toml
 
-  doc:
-    # run docs generation on nightly rather than stable
-    runs-on: ubuntu-latest
-    name: nightly / doc
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Install nightly
-        uses: dtolnay/rust-toolchain@nightly
-      - name: Install cargo-docs-rs
-        uses: dtolnay/install@cargo-docs-rs
-      - name: cargo docs-rs
-        run: cargo docs-rs
-        working-directory: src-tauri
-
   hack:
     # cargo-hack checks combinations of feature flags to ensure that features are all additive
     # which is required for feature unification
