@@ -122,7 +122,7 @@ jobs:
     strategy:
       matrix:
         # revert back to 1.56.1 is regex get downgrade to regex = "1.8"
-        msrv: ["1.65.0"] # 2021 edition requires 1.56
+        msrv: ["1.78.0"] # 2021 edition requires 1.56
     name: ubuntu / ${{ matrix.msrv }}
     steps:
       - uses: actions/checkout@v4
