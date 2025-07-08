@@ -102,7 +102,7 @@ jobs:
       - name: cargo-semver-checks
         uses: obi1kenobi/cargo-semver-checks-action@v2
         with:
-          args: --manifest-path src-tauri/Cargo.toml
+          manifest-path: src-tauri/Cargo.toml
 
   doc:
     # run docs generation on nightly rather than stable
