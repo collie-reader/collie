@@ -76,7 +76,7 @@ jobs:
           projectPath: src-tauri
       - name: Upload build artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: collie-${{ matrix.platform }}
           path: src-tauri/target/release/
@@ -166,8 +166,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # revert back to 1.56.1 is regex get downgrade to regex = "1.8"
-        msrv: ["1.78.0"] # 2021 edition requires 1.56
+        # Updated to match the actual minimum version required by dependencies
+        msrv: ["1.82.0"] # Some dependencies require 1.82
     name: ubuntu / ${{ matrix.msrv }}
     steps:
       - uses: actions/checkout@v4
