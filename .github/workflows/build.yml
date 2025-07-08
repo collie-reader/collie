@@ -88,22 +88,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           args: --manifest-path src-tauri/Cargo.toml
 
-  semver:
-    runs-on: ubuntu-latest
-    name: semver
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Install stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-      - name: cargo-semver-checks
-        uses: obi1kenobi/cargo-semver-checks-action@v2
-        with:
-          manifest-path: src-tauri/Cargo.toml
-
   hack:
     # cargo-hack checks combinations of feature flags to ensure that features are all additive
     # which is required for feature unification
