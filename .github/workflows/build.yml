@@ -71,6 +71,12 @@ jobs:
             libatk1.0-dev \
             libgdk-pixbuf2.0-dev \
             patchelf
+      - name: Debug pkg-config
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          pkg-config --version
+          find /usr -name "glib-2.0.pc" 2>/dev/null || echo "glib-2.0.pc not found"
+          pkg-config --libs --cflags glib-2.0 || echo "pkg-config glib-2.0 failed"
       - name: install frontend dependencies
         run: pnpm install
       - uses: tauri-apps/tauri-action@v0
@@ -150,7 +156,6 @@ jobs:
           sudo apt-get install -y \
             libgtk-3-dev \
             libgdk-3-dev \
-            libwebkit2gtk-4.0-dev \
             libappindicator3-dev \
             librsvg2-dev \
             libglib2.0-dev \
