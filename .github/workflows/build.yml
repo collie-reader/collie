@@ -97,14 +97,21 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+
       - name: Install stable
         uses: dtolnay/rust-toolchain@stable
+
       - name: cargo install cargo-hack
         uses: taiki-e/install-action@cargo-hack
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libglib2.0-dev
+
       - name: Ensure distDir exists
         run: mkdir -p dist
-        working-directory: ${{ github.workspace }}
-      # --feature-powerset runs for every combination of features; no target specifier
+        working-directory: src-tauri
+
+        # --feature-powerset runs for every combination of features; no target specifier
       - name: cargo hack
         run: cargo hack --feature-powerset check
         working-directory: src-tauri
