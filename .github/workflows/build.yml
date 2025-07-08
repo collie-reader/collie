@@ -101,6 +101,9 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: cargo install cargo-hack
         uses: taiki-e/install-action@cargo-hack
+      - name: Ensure distDir exists
+        run: mkdir -p dist
+        working-directory: ${{ github.workspace }}
       # --feature-powerset runs for every combination of features; no target specifier
       - name: cargo hack
         run: cargo hack --feature-powerset check
