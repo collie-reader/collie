@@ -1,6 +1,6 @@
 {
   "name": "collie",
-  "version": "0.1.10",
+  "version": "0.1.12",
   "description": "A minimal RSS reader just for you",
   "scripts": {
     "start": "vite",
@@ -12,22 +12,21 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
-    "@solidjs/router": "^0.8.3",
-    "@tauri-apps/api": "^1.4.0",
-    "dayjs": "^1.11.9",
-    "dompurify": "^3.0.5",
-    "solid-js": "^1.7.8"
+    "@solidjs/router": "^0.8.4",
+    "@tauri-apps/api": "^1.6.0",
+    "dayjs": "^1.11.13",
+    "dompurify": "^3.2.5",
+    "solid-js": "^1.9.5"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.4.0",
-    "@types/dompurify": "^3.0.2",
-    "@typescript-eslint/eslint-plugin": "^6.4.1",
-    "@typescript-eslint/parser": "^6.4.1",
-    "eslint": "^8.47.0",
-    "eslint-plugin-solid": "^0.13.0",
-    "typescript": "^5.1.6",
-    "vite": "^4.4.4",
-    "vite-plugin-solid": "^2.7.0"
-  },
-  "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"
+    "@tauri-apps/cli": "^1.6.3",
+    "@types/dompurify": "^3.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-solid": "^0.13.2",
+    "typescript": "^5.8.3",
+    "vite": "^4.5.13",
+    "vite-plugin-solid": "^2.11.6"
+  }
 }
