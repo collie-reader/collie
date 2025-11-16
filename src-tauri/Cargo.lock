@@ -498,17 +498,11 @@ dependencies = [
 
 [[package]]
 name = "collie"
-version = "0.1.0"
-dependencies = [
- "collie-core",
-]
-
-[[package]]
-name = "collie"
 version = "0.1.12"
 dependencies = [
+ "base64 0.22.1",
  "chrono",
- "collie 0.1.0",
+ "collie 0.2.0",
  "pretty_assertions",
  "regex",
  "reqwest 0.12.24",
@@ -524,8 +518,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "collie"
+version = "0.2.0"
+dependencies = [
+ "collie-core",
+]
+
+[[package]]
 name = "collie-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "atom_syndication",
  "chrono",

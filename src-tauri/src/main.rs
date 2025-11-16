@@ -20,6 +20,12 @@ pub mod commands {
     pub mod settings;
 }
 
+pub mod fetchers {
+    pub mod auth;
+    pub mod feeds;
+    pub mod items;
+}
+
 pub mod error;
 pub mod worker;
 

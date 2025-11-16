@@ -11,7 +11,7 @@ div.settings-page ul.setting-list > li {
 div.settings-page ul.setting-list > li > small {
   display: block;
   font-size: .8rem;
-  margin-top: -3px;
+  margin-top: -2px;
 }
 
 div.settings-page label,
@@ -21,4 +21,13 @@ div.settings-page button {
 
 div.settings-page .disabled {
   color: var(--color-sep);
+}
+
+div.settings-page ul.sublist {
+  padding-top: .5rem;
+  border-left: 2px solid var(--color-sep);
+}
+
+div.settings-page ul.sublist > li {
+  padding-left: .5rem;
 }

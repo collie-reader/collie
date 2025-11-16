@@ -21,6 +21,8 @@ function Settings() {
     [api.SettingKey.PROXY]: "",
     [api.SettingKey.FETCH_OLD_ITEMS]: "",
     [api.SettingKey.UPSTREAM_URL]: "",
+    [api.SettingKey.UPSTREAM_ACCESS]: "",
+    [api.SettingKey.UPSTREAM_SECRET]: "",
   });
 
   const keyToText = (key: api.SettingKey) => {
@@ -157,6 +159,36 @@ function Settings() {
                 {SaveButton(setting)}
                 <small>Enter the URL to get data(items, feeds, etc.) from the upstream.</small>
                 <small>Locally stored data will not be deleted, so if you want to revert to using local data, clear the upstream URL.</small>
+                <Show when={newSettings()[api.SettingKey.UPSTREAM_URL]}>
+                  <ul class="setting-list sublist">
+                    <li>
+                      <span><strong>Access Key</strong>: </span>
+                      <input type="text" value={newSettings()[api.SettingKey.UPSTREAM_ACCESS]}
+                             onInput={(e) => setNewSettings({
+                               ...newSettings(),
+                               [api.SettingKey.UPSTREAM_ACCESS]: e.currentTarget.value
+                             })}/>
+                      {(() => {
+                        const accessSetting = settings().find(s => s.key === api.SettingKey.UPSTREAM_ACCESS);
+                        const currentValue = accessSetting?.value ?? "";
+                        return SaveButton({ key: api.SettingKey.UPSTREAM_ACCESS, value: currentValue });
+                      })()}
+                    </li>
+                    <li>
+                      <span><strong>Secret Key</strong>: </span>
+                      <input type="password" value={newSettings()[api.SettingKey.UPSTREAM_SECRET]}
+                             onInput={(e) => setNewSettings({
+                               ...newSettings(),
+                               [api.SettingKey.UPSTREAM_SECRET]: e.currentTarget.value
+                             })}/>
+                      {(() => {
+                        const secretSetting = settings().find(s => s.key === api.SettingKey.UPSTREAM_SECRET);
+                        const currentValue = secretSetting?.value ?? "";
+                        return SaveButton({ key: api.SettingKey.UPSTREAM_SECRET, value: currentValue });
+                      })()}
+                    </li>
+                  </ul>
+                </Show>
               </Match>
             </Switch>
           </li>
@@ -166,7 +198,11 @@ function Settings() {
           <small>Latest version: <a href="https://github.com/parksb/collie/releases/latest"
             target="_blank">{latestVersion()}</a></small>
         </li>
-        <li><strong>Data directory</strong>: {dataDir()}</li>
+        <li class={settings().find(x => x.key == api.SettingKey.UPSTREAM_URL)?.value ? 'disabled' : undefined}><strong>Data directory</strong>: {dataDir()}
+          <Show when={settings().find(x => x.key == api.SettingKey.UPSTREAM_URL)?.value}>
+            <small>Using upstream, so only settings are stored in the local database.</small>
+          </Show>
+        </li>
       </ul>
     </div>
   );

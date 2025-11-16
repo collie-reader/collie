@@ -9,6 +9,8 @@ export enum SettingKey {
   PROXY="Proxy",
   FETCH_OLD_ITEMS = "FetchOldItems",
   UPSTREAM_URL = "UpstreamUrl",
+  UPSTREAM_ACCESS = "UpstreamAccess",
+  UPSTREAM_SECRET = "UpstreamSecret",
 }
 
 export interface Setting {

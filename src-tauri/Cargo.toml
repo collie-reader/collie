@@ -24,7 +24,8 @@ sea-query = { version = "0.31", features = ["with-chrono"] }
 sea-query-rusqlite = { version = "0.6", features = ["with-chrono"] }
 thiserror = "1.0"
 regex = "1.9"
-reqwest = "0.12.7"
+reqwest = { version = "0.12.7", features = ["json"] }
+base64 = "0.22"
 
 [dev-dependencies]
 pretty_assertions = "1.4"
