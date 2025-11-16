@@ -19,7 +19,7 @@ tauri = { version = "1.4", features = [ "path-all", "dialog-confirm", "dialog-as
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
-rusqlite = "0.31"
+rusqlite = { version = "0.31", features = ["bundled"] }
 sea-query = { version = "0.31", features = ["with-chrono"] }
 sea-query-rusqlite = { version = "0.6", features = ["with-chrono"] }
 thiserror = "1.0"
