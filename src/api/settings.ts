@@ -6,7 +6,7 @@ export enum SettingKey {
   DB_SCHEME_VERSION = "DbSchemeVersion",
   THEME = "Theme",
   ITEMS_ORDER = "ItemsOrder",
-  PROXY="Proxy",
+  PROXY = "Proxy",
   FETCH_OLD_ITEMS = "FetchOldItems",
   UPSTREAM_URL = "UpstreamUrl",
   UPSTREAM_ACCESS = "UpstreamAccess",
@@ -14,8 +14,8 @@ export enum SettingKey {
 }
 
 export interface Setting {
-  key: SettingKey,
-  value: string,
+  key: SettingKey;
+  value: string;
 }
 
 export type SettingToUpdate = Setting;

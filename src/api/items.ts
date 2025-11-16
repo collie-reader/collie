@@ -6,44 +6,44 @@ export enum ItemStatus {
 }
 
 export interface ItemFeed {
-  id: number,
-  title: string,
-  link: string,
+  id: number;
+  title: string;
+  link: string;
 }
 
 export interface Item {
-  id: number,
-  fingerprint: string,
-  author?: string | null,
-  title: string,
-  description: string,
-  link: string,
-  status: ItemStatus,
-  is_saved: boolean,
-  published_at: string,
-  feed: ItemFeed,
+  id: number;
+  fingerprint: string;
+  author?: string | null;
+  title: string;
+  description: string;
+  link: string;
+  status: ItemStatus;
+  is_saved: boolean;
+  published_at: string;
+  feed: ItemFeed;
 }
 
 export interface ItemToCreate {
-  author?: string | null,
-  title: string,
-  description: string,
-  link: string,
-  status: ItemStatus,
-  pulished_at: string,
-  feed: number,
+  author?: string | null;
+  title: string;
+  description: string;
+  link: string;
+  status: ItemStatus;
+  pulished_at: string;
+  feed: number;
 }
 
 export interface ItemToUpdate {
-  id: number,
-  status?: ItemStatus | null,
-  is_saved?: boolean | null,
+  id: number;
+  status?: ItemStatus | null;
+  is_saved?: boolean | null;
 }
 
 export interface ItemToUpdateAll {
-  status?: ItemStatus | null,
-  is_saved?: boolean | null,
-  option: ItemReadOption,
+  status?: ItemStatus | null;
+  is_saved?: boolean | null;
+  option: ItemReadOption;
 }
 
 export enum ItemOrder {
@@ -66,13 +66,13 @@ export function ItemOrderfrom(x: string) {
 }
 
 export interface ItemReadOption {
-  ids?: number[] | null,
-  feed?: number | null,
-  status?: ItemStatus | null,
-  is_saved?: boolean | null,
-  order_by?: ItemOrder | null,
-  limit?: number | null,
-  offset?: number | null,
+  ids?: number[] | null;
+  feed?: number | null;
+  status?: ItemStatus | null;
+  is_saved?: boolean | null;
+  order_by?: ItemOrder | null;
+  limit?: number | null;
+  offset?: number | null;
 }
 
 export async function readItems(opt: ItemReadOption): Promise<Item[]> {
@@ -82,7 +82,7 @@ export async function readItems(opt: ItemReadOption): Promise<Item[]> {
     // Do nothing
   }
 
-  return  [];
+  return [];
 }
 
 export async function countItems(opt: ItemReadOption): Promise<number> {
@@ -92,7 +92,7 @@ export async function countItems(opt: ItemReadOption): Promise<number> {
     // Do nothing
   }
 
-  return  0
+  return 0;
 }
 
 export async function save(id: number) {

@@ -14,7 +14,7 @@ div.items-page div.item-list > ul {
 }
 
 div.items-page div.item-list > ul > li {
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
 }
 
 div.items-page div.item-list > ul > li.selected {
@@ -27,7 +27,7 @@ div.items-page div.item-list > ul > li .hostname {
 
 div.items-page div.item-list > ul > li > small {
   display: block;
-  font-size: .8rem;
+  font-size: 0.8rem;
   margin-top: -3px;
 }
 
@@ -88,9 +88,9 @@ div.items-page div.item-viewer blockquote {
 
 div.items-page div.item-viewer * {
   margin-top: 0;
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
 }
 
 div.items-page div.item-viewer li {
-  margin-bottom: .2rem;
+  margin-bottom: 0.2rem;
 }

@@ -6,26 +6,26 @@ export enum FeedStatus {
 }
 
 export interface Feed {
-    id: number,
-    title: string,
-    link: string,
-    status: FeedStatus,
-    checked_at: string,
-    fetch_old_items: boolean,
+  id: number;
+  title: string;
+  link: string;
+  status: FeedStatus;
+  checked_at: string;
+  fetch_old_items: boolean;
 }
 
 export interface FeedToCreate {
-    title: string,
-    link: string,
-    fetch_old_items: boolean,
+  title: string;
+  link: string;
+  fetch_old_items: boolean;
 }
 
 export interface FeedToUpdate {
-    id: number,
-    title?: string | null,
-    link?: string | null,
-    status?: FeedStatus | null,
-    fetch_old_items?: boolean | null,
+  id: number;
+  title?: string | null;
+  link?: string | null;
+  status?: FeedStatus | null;
+  fetch_old_items?: boolean | null;
 }
 
 export async function createFeed(arg: FeedToCreate) {

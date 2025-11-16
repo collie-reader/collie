@@ -3,7 +3,7 @@ div.feeds-page form > input {
 }
 
 div.feeds-page form > span > input {
-  margin-left: .5rem;
+  margin-left: 0.5rem;
 }
 
 div.feeds-page ul.feed-list {
@@ -12,7 +12,7 @@ div.feeds-page ul.feed-list {
 }
 
 div.feeds-page ul.feed-list > li {
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
 }
 
 div.feeds-page ul.feed-list > li > .row {
@@ -21,6 +21,6 @@ div.feeds-page ul.feed-list > li > .row {
 
 div.feeds-page ul.feed-list > li > small {
   display: block;
-  font-size: .8rem;
+  font-size: 0.8rem;
   margin-top: -3px;
 }

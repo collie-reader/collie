@@ -12,12 +12,12 @@ const Settings = lazy(() => import("./routes/Settings"));
 function App() {
   const setTheme = (theme: string) => {
     document.querySelector("html")?.setAttribute("data-theme", theme);
-  }
+  };
 
   onMount(async () => {
     const res = await api.readSetting(api.SettingKey.THEME);
     const theme = res?.value ?? "system";
-    const systemDarkTheme = window.matchMedia('(prefers-color-scheme: dark)');
+    const systemDarkTheme = window.matchMedia("(prefers-color-scheme: dark)");
 
     switch (theme) {
       case "system":
@@ -26,8 +26,7 @@ function App() {
         } else {
           setTheme("light");
         }
-        systemDarkTheme.addEventListener("change", (e) =>
-          e.matches ? setTheme("dark") : setTheme("light"));
+        systemDarkTheme.addEventListener("change", (e) => (e.matches ? setTheme("dark") : setTheme("light")));
         break;
       default:
         setTheme(theme);

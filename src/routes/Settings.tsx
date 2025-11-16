@@ -1,5 +1,5 @@
-import { getVersion } from '@tauri-apps/api/app';
-import { appDataDir } from '@tauri-apps/api/path';
+import { getVersion } from "@tauri-apps/api/app";
+import { appDataDir } from "@tauri-apps/api/path";
 
 import { createSignal, For, Match, onMount, Show, Switch } from "solid-js";
 
@@ -34,13 +34,13 @@ function Settings() {
       case api.SettingKey.THEME:
         return "Theme";
       case api.SettingKey.PROXY:
-        return "Proxy"
+        return "Proxy";
       case api.SettingKey.UPSTREAM_URL:
         return "Upstream URL";
       default:
         return "";
     }
-  }
+  };
 
   const load = async () => {
     setSettings(await api.readAllSettings());
@@ -62,22 +62,27 @@ function Settings() {
     switch (key) {
       case api.SettingKey.POLLING_FREQUENCY:
         if (!validate(key, value)) {
-          setNewSettings({ ...newSettings(), [api.SettingKey.POLLING_FREQUENCY]: "30" })
+          setNewSettings({ ...newSettings(), [api.SettingKey.POLLING_FREQUENCY]: "30" });
           return;
         }
     }
 
-    await api.updateSetting({ key, value })
-    await load()
+    await api.updateSetting({ key, value });
+    await load();
   };
 
-  const SaveButton = (setting: api.Setting, afterUpdate: () => void = () => {}) =>
+  const SaveButton = (setting: api.Setting, afterUpdate: () => void = () => {}) => (
     <Show when={validate(setting.key, newSettings()[setting.key]) && newSettings()[setting.key] !== setting.value}>
-      <button onClick={() => {
-        update(setting.key, newSettings()[setting.key]);
-        afterUpdate();
-      }}>Save</button>
-    </Show>;
+      <button
+        onClick={() => {
+          update(setting.key, newSettings()[setting.key]);
+          afterUpdate();
+        }}
+      >
+        Save
+      </button>
+    </Show>
+  );
 
   onMount(async () => {
     const fetchLatestVersion = async (): Promise<string> => {
@@ -98,7 +103,7 @@ function Settings() {
 
     const newSettingsPlaceholder = newSettings();
     settings().forEach((setting: api.Setting) => {
-        newSettingsPlaceholder[setting.key] = setting.value;
+      newSettingsPlaceholder[setting.key] = setting.value;
     });
     setNewSettings({ ...newSettings, ...newSettingsPlaceholder });
   });
@@ -107,99 +112,171 @@ function Settings() {
     <div class="settings-page container">
       <h2>Settings</h2>
       <ul class="setting-list">
-        <For each={settings()}>{(setting) =>
-          <li class="row">
-            <Switch>
-              <Match when={setting.key === api.SettingKey.POLLING_FREQUENCY}>
-                <span><strong>{keyToText(setting.key)}</strong>: Check all feeds every</span>
-                <input type="number" min="30" value={newSettings()[setting.key]}
-                  onInput={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })} /> <span>seconds.</span>
-                {SaveButton(setting)}
-                <small>The seconds cannot be less than 30. A feed that update too quickly may overwhelm you.</small>
-                <Show when={settings().find(x => x.key == api.SettingKey.UPSTREAM_URL)?.value}>
-                  <small>This option sets the polling frequency for the given upstream, not the feeds.</small>
-                </Show>
-              </Match>
-              <Match when={setting.key === api.SettingKey.NOTIFICATION}>
-                <span><strong>{keyToText(setting.key)}</strong>: Do you want to be notified when new items are arrived?</span>
-                <label for="yes"><input type="radio" id="yes" name={setting.key} value="1"
-                  checked={newSettings()[setting.key] === "1"}
-                  onChange={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })} />Yes</label>
-                <label for="no"><input type="radio" id="no" name={setting.key} value="0"
-                  checked={newSettings()[setting.key] === "0"}
-                  onChange={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })} />No</label>
-                {SaveButton(setting)}
-              </Match>
-              <Match when={setting.key === api.SettingKey.THEME}>
-                <span><strong>{keyToText(setting.key)}</strong>: </span>
-                <select onChange={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })}>
-                  <option value="system" selected={newSettings()[setting.key] === "system"}>Sync with system</option>
-                  <option value="light" selected={newSettings()[setting.key] === "light"}>Light</option>
-                  <option value="dark" selected={newSettings()[setting.key] === "dark"}>Dark</option>
-                  <option  value="dracula" selected={newSettings()[setting.key] === "dracula"}>Dracula</option>
-                </select>
-                {SaveButton(setting, () => location.reload())}
-              </Match>
-              <Match when={setting.key === api.SettingKey.PROXY}>
-                <span><strong>{keyToText(setting.key)}</strong>: </span>
-                <input type="text" value={newSettings()[setting.key]}
-                       onInput={(e) => setNewSettings({
-                         ...newSettings(),
-                         [setting.key]: e.currentTarget.value
-                       })}/>
-                {SaveButton(setting)}
-              </Match>
-              <Match when={setting.key === api.SettingKey.UPSTREAM_URL}>
-                <span><strong>{keyToText(setting.key)}</strong>: </span>
-                <input type="text" value={newSettings()[setting.key]}
-                       onInput={(e) => setNewSettings({
-                         ...newSettings(),
-                         [setting.key]: e.currentTarget.value
-                       })}/>
-                {SaveButton(setting)}
-                <small>Enter the URL to get data(items, feeds, etc.) from the upstream.</small>
-                <small>Locally stored data will not be deleted, so if you want to revert to using local data, clear the upstream URL.</small>
-                <Show when={newSettings()[api.SettingKey.UPSTREAM_URL]}>
-                  <ul class="setting-list sublist">
-                    <li>
-                      <span><strong>Access Key</strong>: </span>
-                      <input type="text" value={newSettings()[api.SettingKey.UPSTREAM_ACCESS]}
-                             onInput={(e) => setNewSettings({
-                               ...newSettings(),
-                               [api.SettingKey.UPSTREAM_ACCESS]: e.currentTarget.value
-                             })}/>
-                      {(() => {
-                        const accessSetting = settings().find(s => s.key === api.SettingKey.UPSTREAM_ACCESS);
-                        const currentValue = accessSetting?.value ?? "";
-                        return SaveButton({ key: api.SettingKey.UPSTREAM_ACCESS, value: currentValue });
-                      })()}
-                    </li>
-                    <li>
-                      <span><strong>Secret Key</strong>: </span>
-                      <input type="password" value={newSettings()[api.SettingKey.UPSTREAM_SECRET]}
-                             onInput={(e) => setNewSettings({
-                               ...newSettings(),
-                               [api.SettingKey.UPSTREAM_SECRET]: e.currentTarget.value
-                             })}/>
-                      {(() => {
-                        const secretSetting = settings().find(s => s.key === api.SettingKey.UPSTREAM_SECRET);
-                        const currentValue = secretSetting?.value ?? "";
-                        return SaveButton({ key: api.SettingKey.UPSTREAM_SECRET, value: currentValue });
-                      })()}
-                    </li>
-                  </ul>
-                </Show>
-              </Match>
-            </Switch>
-          </li>
-        }</For>
+        <For each={settings()}>
+          {(setting) => (
+            <li class="row">
+              <Switch>
+                <Match when={setting.key === api.SettingKey.POLLING_FREQUENCY}>
+                  <span>
+                    <strong>{keyToText(setting.key)}</strong>: Check all feeds every
+                  </span>
+                  <input
+                    type="number"
+                    min="30"
+                    value={newSettings()[setting.key]}
+                    onInput={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })}
+                  />{" "}
+                  <span>seconds.</span>
+                  {SaveButton(setting)}
+                  <small>The seconds cannot be less than 30. A feed that update too quickly may overwhelm you.</small>
+                  <Show when={settings().find((x) => x.key == api.SettingKey.UPSTREAM_URL)?.value}>
+                    <small>This option sets the polling frequency for the given upstream, not the feeds.</small>
+                  </Show>
+                </Match>
+                <Match when={setting.key === api.SettingKey.NOTIFICATION}>
+                  <span>
+                    <strong>{keyToText(setting.key)}</strong>: Do you want to be notified when new items are arrived?
+                  </span>
+                  <label for="yes">
+                    <input
+                      type="radio"
+                      id="yes"
+                      name={setting.key}
+                      value="1"
+                      checked={newSettings()[setting.key] === "1"}
+                      onChange={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })}
+                    />
+                    Yes
+                  </label>
+                  <label for="no">
+                    <input
+                      type="radio"
+                      id="no"
+                      name={setting.key}
+                      value="0"
+                      checked={newSettings()[setting.key] === "0"}
+                      onChange={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })}
+                    />
+                    No
+                  </label>
+                  {SaveButton(setting)}
+                </Match>
+                <Match when={setting.key === api.SettingKey.THEME}>
+                  <span>
+                    <strong>{keyToText(setting.key)}</strong>:{" "}
+                  </span>
+                  <select onChange={(e) => setNewSettings({ ...newSettings(), [setting.key]: e.currentTarget.value })}>
+                    <option value="system" selected={newSettings()[setting.key] === "system"}>
+                      Sync with system
+                    </option>
+                    <option value="light" selected={newSettings()[setting.key] === "light"}>
+                      Light
+                    </option>
+                    <option value="dark" selected={newSettings()[setting.key] === "dark"}>
+                      Dark
+                    </option>
+                    <option value="dracula" selected={newSettings()[setting.key] === "dracula"}>
+                      Dracula
+                    </option>
+                  </select>
+                  {SaveButton(setting, () => location.reload())}
+                </Match>
+                <Match when={setting.key === api.SettingKey.PROXY}>
+                  <span>
+                    <strong>{keyToText(setting.key)}</strong>:{" "}
+                  </span>
+                  <input
+                    type="text"
+                    value={newSettings()[setting.key]}
+                    onInput={(e) =>
+                      setNewSettings({
+                        ...newSettings(),
+                        [setting.key]: e.currentTarget.value,
+                      })
+                    }
+                  />
+                  {SaveButton(setting)}
+                </Match>
+                <Match when={setting.key === api.SettingKey.UPSTREAM_URL}>
+                  <span>
+                    <strong>{keyToText(setting.key)}</strong>:{" "}
+                  </span>
+                  <input
+                    type="text"
+                    value={newSettings()[setting.key]}
+                    onInput={(e) =>
+                      setNewSettings({
+                        ...newSettings(),
+                        [setting.key]: e.currentTarget.value,
+                      })
+                    }
+                  />
+                  {SaveButton(setting)}
+                  <small>Enter the URL to get data(items, feeds, etc.) from the upstream.</small>
+                  <small>
+                    Locally stored data will not be deleted, so if you want to revert to using local data, clear the upstream URL.
+                  </small>
+                  <Show when={newSettings()[api.SettingKey.UPSTREAM_URL]}>
+                    <ul class="setting-list sublist">
+                      <li>
+                        <span>
+                          <strong>Access Key</strong>:{" "}
+                        </span>
+                        <input
+                          type="text"
+                          value={newSettings()[api.SettingKey.UPSTREAM_ACCESS]}
+                          onInput={(e) =>
+                            setNewSettings({
+                              ...newSettings(),
+                              [api.SettingKey.UPSTREAM_ACCESS]: e.currentTarget.value,
+                            })
+                          }
+                        />
+                        {(() => {
+                          const accessSetting = settings().find((s) => s.key === api.SettingKey.UPSTREAM_ACCESS);
+                          const currentValue = accessSetting?.value ?? "";
+                          return SaveButton({ key: api.SettingKey.UPSTREAM_ACCESS, value: currentValue });
+                        })()}
+                      </li>
+                      <li>
+                        <span>
+                          <strong>Secret Key</strong>:{" "}
+                        </span>
+                        <input
+                          type="password"
+                          value={newSettings()[api.SettingKey.UPSTREAM_SECRET]}
+                          onInput={(e) =>
+                            setNewSettings({
+                              ...newSettings(),
+                              [api.SettingKey.UPSTREAM_SECRET]: e.currentTarget.value,
+                            })
+                          }
+                        />
+                        {(() => {
+                          const secretSetting = settings().find((s) => s.key === api.SettingKey.UPSTREAM_SECRET);
+                          const currentValue = secretSetting?.value ?? "";
+                          return SaveButton({ key: api.SettingKey.UPSTREAM_SECRET, value: currentValue });
+                        })()}
+                      </li>
+                    </ul>
+                  </Show>
+                </Match>
+              </Switch>
+            </li>
+          )}
+        </For>
         <li>
           <strong>Current version</strong>: v{version()}
-          <small>Latest version: <a href="https://github.com/parksb/collie/releases/latest"
-            target="_blank">{latestVersion()}</a></small>
+          <small>
+            Latest version:{" "}
+            <a href="https://github.com/parksb/collie/releases/latest" target="_blank">
+              {latestVersion()}
+            </a>
+          </small>
         </li>
-        <li class={settings().find(x => x.key == api.SettingKey.UPSTREAM_URL)?.value ? 'disabled' : undefined}><strong>Data directory</strong>: {dataDir()}
-          <Show when={settings().find(x => x.key == api.SettingKey.UPSTREAM_URL)?.value}>
+        <li class={settings().find((x) => x.key == api.SettingKey.UPSTREAM_URL)?.value ? "disabled" : undefined}>
+          <strong>Data directory</strong>: {dataDir()}
+          <Show when={settings().find((x) => x.key == api.SettingKey.UPSTREAM_URL)?.value}>
             <small>Using upstream, so only settings are stored in the local database.</small>
           </Show>
         </li>
