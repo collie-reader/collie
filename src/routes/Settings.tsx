@@ -96,7 +96,7 @@ function Settings() {
     setLatestVersion(fetchedLatestVersion);
     setDataDir(fetchedDataDir);
 
-    let newSettingsPlaceholder = newSettings();
+    const newSettingsPlaceholder = newSettings();
     settings().forEach((setting: api.Setting) => {
         newSettingsPlaceholder[setting.key] = setting.value;
     });

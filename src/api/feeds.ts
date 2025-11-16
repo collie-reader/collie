@@ -31,7 +31,7 @@ export interface FeedToUpdate {
 export async function createFeed(arg: FeedToCreate) {
   try {
     await invoke("create_feed", { arg });
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 }
@@ -39,7 +39,7 @@ export async function createFeed(arg: FeedToCreate) {
 export async function updateFeed(arg: FeedToUpdate) {
   try {
     await invoke("update_feed", { arg });
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 }
@@ -47,7 +47,7 @@ export async function updateFeed(arg: FeedToUpdate) {
 export async function readAllFeeds(): Promise<Feed[]> {
   try {
     return invoke("read_all_feeds");
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 
@@ -57,7 +57,7 @@ export async function readAllFeeds(): Promise<Feed[]> {
 export async function readFeed(id: number): Promise<Feed | null> {
   try {
     return invoke("read_feed", { id });
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 
@@ -67,7 +67,7 @@ export async function readFeed(id: number): Promise<Feed | null> {
 export async function deleteFeed(id: number) {
   try {
     await invoke("delete_feed", { id });
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 }

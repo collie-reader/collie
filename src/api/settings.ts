@@ -23,7 +23,7 @@ export type SettingToUpdate = Setting;
 export async function readAllSettings(): Promise<Setting[]> {
   try {
     return invoke("read_all_settings");
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 
@@ -33,7 +33,7 @@ export async function readAllSettings(): Promise<Setting[]> {
 export async function readSetting(key: SettingKey): Promise<Setting | null> {
   try {
     return invoke("read_setting", { key });
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 
@@ -43,7 +43,7 @@ export async function readSetting(key: SettingKey): Promise<Setting | null> {
 export async function updateSetting(arg: SettingToUpdate) {
   try {
     await invoke("update_setting", { arg: { key: arg.key, value: arg.value } });
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 }

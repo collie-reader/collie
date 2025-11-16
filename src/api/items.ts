@@ -78,7 +78,7 @@ export interface ItemReadOption {
 export async function readItems(opt: ItemReadOption): Promise<Item[]> {
   try {
     return invoke("read_all_items", { opt: { ...opt } });
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 
@@ -88,7 +88,7 @@ export async function readItems(opt: ItemReadOption): Promise<Item[]> {
 export async function countItems(opt: ItemReadOption): Promise<number> {
   try {
     return invoke("count_all_items", { opt: { ...opt } });
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 
@@ -98,7 +98,7 @@ export async function countItems(opt: ItemReadOption): Promise<number> {
 export async function save(id: number) {
   try {
     await invoke("update_item", { arg: { id, is_saved: true } });
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 }
@@ -106,7 +106,7 @@ export async function save(id: number) {
 export async function unsave(id: number) {
   try {
     await invoke("update_item", { arg: { id, is_saved: false } });
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 }
@@ -118,7 +118,7 @@ export async function markAs(ids: number[], status: ItemStatus) {
     } else if (ids.length > 1) {
       await invoke("update_items", { arg: { opt: { ids }, status } });
     }
-  } catch (e) {
+  } catch {
     // Do nothing
   }
 }

@@ -113,7 +113,7 @@ function Items(props: Props) {
     const res = await settingApi.readSetting(settingApi.SettingKey.ITEMS_ORDER);
     const order = res?.value ?? api.ItemOrder.RECEIVED_DATE_DESC;
 
-    let initialOpt = { order_by: api.ItemOrderfrom(order), offset: 0, limit: LIMIT };
+    const initialOpt = { order_by: api.ItemOrderfrom(order), offset: 0, limit: LIMIT };
     switch (props.type) {
       case ItemType.INBOX:
         setOpt(initialOpt);
@@ -140,7 +140,6 @@ function Items(props: Props) {
     }
   });
 
-  // eslint-disable-next-line solid/reactivity
   listen('feed_updated', async () => loadItems());
 
   return (
@@ -222,7 +221,6 @@ function Items(props: Props) {
             <span>{selectedItem()?.title}</span>
             <button onClick={() => setSelectedItem(null)}>✖</button>
           </h2>
-          {/* eslint-disable-next-line solid/no-innerhtml*/}
           <div innerHTML={DOMPurify.sanitize(selectedItem()?.description ?? "")
             .replace(/href="http(s?).*"/g, "target=\"_blank\" $&")} />
         </div>
