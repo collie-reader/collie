@@ -520,6 +520,8 @@ dependencies = [
 [[package]]
 name = "collie"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "83271cb6666322f6fa80c9cf10f3f97b5d8fa9bb2c1a562deb969e4a7fd5ff0b"
 dependencies = [
  "collie-core",
 ]
@@ -527,6 +529,8 @@ dependencies = [
 [[package]]
 name = "collie-core"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10586a9561976bd692a7db2f6cd8253239367b50687666e6aa0ec42aa44a3ec1"
 dependencies = [
  "atom_syndication",
  "chrono",

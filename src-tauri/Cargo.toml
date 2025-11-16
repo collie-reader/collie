@@ -13,7 +13,7 @@ edition = "2021"
 tauri-build = { version = "1.4", features = [] }
 
 [dependencies]
-collie = { path = "../../lib/collie" }
+collie = { version = "0.2" }
 tokio = { version = "1.40", features = ["full"] }
 tauri = { version = "1.4", features = [ "path-all", "dialog-confirm", "dialog-ask", "notification-all", "shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
