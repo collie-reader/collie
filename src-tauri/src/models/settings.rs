@@ -125,26 +125,33 @@ pub fn read(conn: &DbConnection, key: &SettingKey) -> Result<Setting> {
 }
 
 pub fn update(conn: &DbConnection, arg: &SettingToUpdate) -> Result<usize> {
+    let mut value = arg.value.clone();
+
     match arg.key {
         SettingKey::PollingFrequency => {
-            if arg.value.parse::<i32>().map(|x| x < 30).unwrap_or(false) {
+            if value.parse::<i32>().map(|x| x < 30).unwrap_or(false) {
                 return Err(Error::Unknown);
             }
         }
         SettingKey::Notification | SettingKey::FetchOldItems => {
-            if arg.value.parse::<bool>().unwrap_or(false) {
+            if value.parse::<bool>().unwrap_or(false) {
                 return Err(Error::Unknown);
             }
         }
         SettingKey::Proxy => {
-            if arg
-                .value
+            if value
                 .parse::<String>()
                 .map(|x| reqwest::Proxy::http(x.deref()))
                 .map(|_| false)
                 .unwrap_or(true)
             {
                 return Err(Error::Unknown);
+            }
+        }
+        SettingKey::UpstreamUrl => {
+            if !value.is_empty() && !value.starts_with("http://") && !value.starts_with("https://")
+            {
+                value = format!("https://{}", value);
             }
         }
         SettingKey::DbSchemeVersion => return Err(Error::Forbidden),
@@ -154,7 +161,7 @@ pub fn update(conn: &DbConnection, arg: &SettingToUpdate) -> Result<usize> {
     let (sql, values) = Query::insert()
         .into_table(Settings::Table)
         .columns([Settings::Key, Settings::Value])
-        .values_panic([arg.key.to_string().into(), arg.value.clone().into()])
+        .values_panic([arg.key.to_string().into(), value.into()])
         .on_conflict(
             OnConflict::column(Settings::Key)
                 .update_column(Settings::Value)
