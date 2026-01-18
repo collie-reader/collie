@@ -42,9 +42,16 @@ function Items(props: Props) {
 
   const loadPage = async (newOffset: number) => {
     setOffset(newOffset);
-    setOpt({ ...opt(), offset: offset() });
+
+    // Prevents offset from being set to a value that is out of range
+    setOpt({ ...opt(), offset: Math.max(0, offset() - 1) });
+
     window.scroll(0, 0);
-    await loadItems();
+    if (count() <= (offset() * LIMIT)) {
+      setOpt({ ...opt(), offset: Math.max(0, offset() - 1) });
+      await loadItems();
+    }
+    await loadItems(); setItems(items);
   };
 
   const toggleSave = async (item: api.Item) => {
@@ -62,7 +69,11 @@ function Items(props: Props) {
     if (ids.length) {
       await api.markAs(ids, status);
       if (props.type === ItemType.UNREAD) {
-        setItems(items().map((x) => (ids.includes(x.id) ? { ...x, status: status } : x)));
+
+        // Instead of greying out `READ` items, we remove them
+        // from the list automatically for better UX
+        // since this page only focuses on `UNREAD` items
+        setItems(items().filter((x) => !ids.includes(x.id)));
         setCount(await api.countItems(opt()));
       } else {
         await loadItems();
@@ -116,7 +127,7 @@ function Items(props: Props) {
         setOpt(initialOpt);
         break;
       case ItemType.UNREAD:
-        setOpt({ ...initialOpt, status: api.ItemStatus.UNREAD });
+        setOpt({ ...initialOpt, status: api.ItemStatus.UNREAD, order_by: api.ItemOrder.UNREAD_FIRST });
         break;
       case ItemType.SAVED:
         setOpt({ ...initialOpt, is_saved: true });

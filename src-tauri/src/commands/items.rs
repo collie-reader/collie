@@ -9,12 +9,14 @@ use crate::fetchers;
 use crate::fetchers::auth::AuthClient;
 use crate::models::settings;
 
+/// Creates an `AuthClient` for authenticated communication to the database
 fn create_auth_client(state: &DbConnection, url: String) -> Result<AuthClient, String> {
     let (access, secret) = settings::upstream_credentials(state)
         .ok_or_else(|| "Upstream credentials not configured".to_string())?;
     Ok(AuthClient::new(url, access, secret))
 }
 
+/// Fetch all items with consideration for the `ItemReadOption` filters
 #[tauri::command]
 pub async fn read_all_items(
     state: State<'_, DbConnection>,
@@ -32,6 +34,7 @@ pub async fn read_all_items(
     }
 }
 
+/// Counts the total number of items with consideration for the `ItemReadOption` filters
 #[tauri::command]
 pub async fn count_all_items(
     state: State<'_, DbConnection>,
@@ -49,6 +52,7 @@ pub async fn count_all_items(
     }
 }
 
+/// Updates a single item in the database or upstream service
 #[tauri::command]
 pub async fn update_item(
     state: State<'_, DbConnection>,
@@ -66,6 +70,7 @@ pub async fn update_item(
     }
 }
 
+/// Performs bulk updates in multiple items
 #[tauri::command]
 pub async fn update_items(
     state: State<'_, DbConnection>,
