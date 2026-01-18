@@ -111,6 +111,7 @@ export async function unsave(id: number) {
   }
 }
 
+// Mark items as a specific status: read or unread
 export async function markAs(ids: number[], status: ItemStatus) {
   try {
     if (ids.length === 1) {
