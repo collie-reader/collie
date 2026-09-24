@@ -10,26 +10,26 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.4", features = [] }
+tauri-build = { version = "1.5.6", features = [] }
 
 [dependencies]
-collie = { version = "0.2" }
-tokio = { version = "1.40", features = ["full"] }
-tauri = { version = "1.4", features = [ "path-all", "dialog-confirm", "dialog-ask", "notification-all", "shell-open"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
-rusqlite = { version = "0.31", features = ["bundled"] }
-sea-query = { version = "0.31", features = ["with-chrono"] }
-sea-query-rusqlite = { version = "0.6", features = ["with-chrono"] }
-thiserror = "1.0"
-regex = "1.9"
-reqwest = { version = "0.12.7", features = ["json"] }
-base64 = "0.22"
+collie = { version = "0.2.0" }
+tokio = { version = "1.53.1", features = ["full"] }
+tauri = { version = "1.8.3", features = [ "path-all", "dialog-confirm", "dialog-ask", "notification-all", "shell-open"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+chrono = { version = "0.4.45", default-features = false, features = ["clock", "serde"] }
+rusqlite = { version = "0.31.0", features = ["bundled"] }
+sea-query = { version = "0.31.1", features = ["with-chrono"] }
+sea-query-rusqlite = { version = "0.6.0", features = ["with-chrono"] }
+thiserror = "1.0.69"
+regex = "1.13.1"
+reqwest = { version = "0.12.28", features = ["json"] }
+base64 = "0.22.1"
 
 [dev-dependencies]
-pretty_assertions = "1.4"
-tauri = { version = "1.4", features = ["test"] }
+pretty_assertions = "1.4.1"
+tauri = { version = "1.8.3", features = ["test"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
