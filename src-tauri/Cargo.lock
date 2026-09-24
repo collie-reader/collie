@@ -507,10 +507,19 @@ dependencies = [
 [[package]]
 name = "collie"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "83271cb6666322f6fa80c9cf10f3f97b5d8fa9bb2c1a562deb969e4a7fd5ff0b"
+dependencies = [
+ "collie-core",
+]
+
+[[package]]
+name = "collie"
+version = "0.2.1"
 dependencies = [
  "base64 0.22.1",
  "chrono",
- "collie 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "collie 0.2.0",
  "pretty_assertions",
  "regex",
  "reqwest 0.12.28",
@@ -523,15 +532,6 @@ dependencies = [
  "tauri-build",
  "thiserror 1.0.69",
  "tokio",
-]
-
-[[package]]
-name = "collie"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83271cb6666322f6fa80c9cf10f3f97b5d8fa9bb2c1a562deb969e4a7fd5ff0b"
-dependencies = [
- "collie-core",
 ]
 
 [[package]]
