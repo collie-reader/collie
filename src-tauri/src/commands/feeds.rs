@@ -4,23 +4,29 @@ use collie::service::feed;
 use tauri::State;
 
 use crate::fetchers;
-use crate::fetchers::auth::AuthClient;
+use crate::fetchers::auth::{AuthClient, AuthClientProvider};
 use crate::models::settings;
 
-fn create_auth_client(state: &DbConnection, url: String) -> Result<AuthClient, String> {
+fn create_auth_client(
+    state: &DbConnection,
+    auth_provider: &AuthClientProvider,
+    url: String,
+) -> Result<AuthClient, String> {
     let (access, secret) = settings::upstream_credentials(state)
         .ok_or_else(|| "Upstream credentials not configured".to_string())?;
-    Ok(AuthClient::new(url, access, secret))
+
+    Ok(auth_provider.get(url, access, secret))
 }
 
 #[tauri::command]
 pub async fn create_feed(
     state: State<'_, DbConnection>,
+    auth_provider: State<'_, AuthClientProvider>,
     arg: FeedToCreate,
 ) -> Result<String, String> {
     match settings::upstream_url(&state) {
         Some(url) => {
-            let client = create_auth_client(&state, url)?;
+            let client = create_auth_client(&state, &auth_provider, url)?;
             fetchers::feeds::create(&client, &arg).await
         }
         None => match feed::create(&state, &arg, None).await {
@@ -31,10 +37,13 @@ pub async fn create_feed(
 }
 
 #[tauri::command]
-pub async fn read_all_feeds(state: State<'_, DbConnection>) -> Result<Vec<Feed>, String> {
+pub async fn read_all_feeds(
+    state: State<'_, DbConnection>,
+    auth_provider: State<'_, AuthClientProvider>,
+) -> Result<Vec<Feed>, String> {
     match settings::upstream_url(&state) {
         Some(url) => {
-            let client = create_auth_client(&state, url)?;
+            let client = create_auth_client(&state, &auth_provider, url)?;
             fetchers::feeds::read_all(&client).await
         }
         None => match feed::read_all(&state) {
@@ -45,10 +54,14 @@ pub async fn read_all_feeds(state: State<'_, DbConnection>) -> Result<Vec<Feed>,
 }
 
 #[tauri::command]
-pub async fn read_feed(state: State<'_, DbConnection>, id: i32) -> Result<Option<Feed>, String> {
+pub async fn read_feed(
+    state: State<'_, DbConnection>,
+    auth_provider: State<'_, AuthClientProvider>,
+    id: i32,
+) -> Result<Option<Feed>, String> {
     match settings::upstream_url(&state) {
         Some(url) => {
-            let client = create_auth_client(&state, url)?;
+            let client = create_auth_client(&state, &auth_provider, url)?;
             fetchers::feeds::read(&client, id).await
         }
         None => match feed::read(&state, id) {
@@ -61,11 +74,12 @@ pub async fn read_feed(state: State<'_, DbConnection>, id: i32) -> Result<Option
 #[tauri::command]
 pub async fn update_feed(
     state: State<'_, DbConnection>,
+    auth_provider: State<'_, AuthClientProvider>,
     arg: FeedToUpdate,
 ) -> Result<String, String> {
     match settings::upstream_url(&state) {
         Some(url) => {
-            let client = create_auth_client(&state, url)?;
+            let client = create_auth_client(&state, &auth_provider, url)?;
             fetchers::feeds::update(&client, &arg).await
         }
         None => match feed::update(&state, &arg) {
@@ -76,10 +90,14 @@ pub async fn update_feed(
 }
 
 #[tauri::command]
-pub async fn delete_feed(state: State<'_, DbConnection>, id: i32) -> Result<String, String> {
+pub async fn delete_feed(
+    state: State<'_, DbConnection>,
+    auth_provider: State<'_, AuthClientProvider>,
+    id: i32,
+) -> Result<String, String> {
     match settings::upstream_url(&state) {
         Some(url) => {
-            let client = create_auth_client(&state, url)?;
+            let client = create_auth_client(&state, &auth_provider, url)?;
             fetchers::feeds::delete(&client, id).await
         }
         None => match feed::delete(&state, id) {

@@ -64,6 +64,7 @@ fn main() {
 
             let conn = Arc::new(Mutex::new(db));
             app.manage(conn.clone());
+            app.manage(fetchers::auth::AuthClientProvider::new()?);
             worker::start(conn.clone(), app);
 
             Ok(())

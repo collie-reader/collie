@@ -8,7 +8,7 @@ use tauri::App;
 use tauri::Manager;
 
 use crate::fetchers;
-use crate::fetchers::auth::AuthClient;
+use crate::fetchers::auth::{AuthClient, AuthClientProvider};
 use crate::models::settings;
 use crate::models::settings::{SettingKey, SettingToUpdate};
 
@@ -27,7 +27,10 @@ pub async fn start(conn: DbConnection, app: &App) {
 
     let auth_client =
         if let (Some(url), Some((access, secret))) = (&upstream_url, upstream_credentials) {
-            Some(AuthClient::new(url.clone(), access, secret))
+            Some(
+                app.state::<AuthClientProvider>()
+                    .get(url.clone(), access, secret),
+            )
         } else {
             None
         };

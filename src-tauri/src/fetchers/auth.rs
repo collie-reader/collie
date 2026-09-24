@@ -1,84 +1,100 @@
 use base64::prelude::*;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use reqwest::{Client, Response, StatusCode};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
+use tokio::sync::Mutex as AsyncMutex;
 
-static TOKEN_CACHE: Mutex<Option<String>> = Mutex::new(None);
-
-pub async fn get_token(url: &str, access: &str, secret: &str) -> Result<String, String> {
-    // Check cache first
-    if let Ok(cache) = TOKEN_CACHE.lock() {
-        if let Some(token) = cache.as_ref() {
-            return Ok(token.clone());
-        }
-    }
-
-    fetch_new_token(url, access, secret).await
+pub struct AuthClientProvider {
+    client: Client,
+    current: Mutex<Option<AuthClient>>,
 }
 
-async fn fetch_new_token(url: &str, access: &str, secret: &str) -> Result<String, String> {
-    let credentials = format!("{}:{}", access, secret);
-    let encoded = BASE64_STANDARD.encode(credentials.as_bytes());
+impl AuthClientProvider {
+    pub fn new() -> Result<Self, reqwest::Error> {
+        Ok(Self {
+            client: Client::builder()
+                .connect_timeout(Duration::from_secs(10))
+                .timeout(Duration::from_secs(60))
+                .build()?,
+            current: Mutex::new(None),
+        })
+    }
 
-    let client = Client::new();
-    let response = client
-        .get(format!("{}/auth", url))
-        .header(AUTHORIZATION, format!("Basic {}", encoded))
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
+    pub fn get(&self, url: String, access: String, secret: String) -> AuthClient {
+        let url = url.trim_end_matches('/').to_string();
+        let mut current = self.current.lock().unwrap();
 
-    if response.status().is_success() {
-        let token: String = response.json().await.map_err(|e| e.to_string())?;
-
-        // Cache the token
-        if let Ok(mut cache) = TOKEN_CACHE.lock() {
-            *cache = Some(token.clone());
+        if let Some(existing) = current.as_ref() {
+            if existing.url == url && existing.access == access && existing.secret == secret {
+                return existing.clone();
+            }
         }
 
-        Ok(token)
-    } else {
-        Err(format!("Authentication failed: {}", response.status()))
+        let client = AuthClient {
+            url,
+            access,
+            secret,
+            client: self.client.clone(),
+            token: Arc::new(AsyncMutex::new(None)),
+        };
+
+        *current = Some(client.clone());
+        client
     }
 }
 
-pub fn clear_token_cache() {
-    if let Ok(mut cache) = TOKEN_CACHE.lock() {
-        *cache = None;
-    }
-}
-
-pub fn create_auth_headers(token: &str) -> HeaderMap {
+fn create_auth_headers(token: &str) -> HeaderMap {
     let mut headers = HeaderMap::new();
+
     if let Ok(value) = HeaderValue::from_str(&format!("Bearer {}", token)) {
         headers.insert(AUTHORIZATION, value);
     }
+
     headers
 }
 
-/// Wrapper for authenticated requests with automatic token refresh on 401
+#[derive(Clone)]
 pub struct AuthClient {
     url: String,
     access: String,
     secret: String,
     client: Client,
+    token: Arc<AsyncMutex<Option<Arc<String>>>>,
 }
 
 impl AuthClient {
-    pub fn new(url: String, access: String, secret: String) -> Self {
-        Self {
-            url,
-            access,
-            secret,
-            client: Client::new(),
+    async fn get_or_refresh_token(
+        &self,
+        rejected: Option<&Arc<String>>,
+    ) -> Result<Arc<String>, String> {
+        let mut cached = self.token.lock().await;
+        if let Some(token) = cached.as_ref() {
+            if rejected.map(|old| !Arc::ptr_eq(old, token)).unwrap_or(true) {
+                return Ok(token.clone());
+            }
         }
-    }
 
-    async fn get_or_refresh_token(&self, force_refresh: bool) -> Result<String, String> {
-        if force_refresh {
-            clear_token_cache();
+        *cached = None;
+
+        let credentials = BASE64_STANDARD.encode(format!("{}:{}", self.access, self.secret));
+
+        let response = self
+            .client
+            .get(format!("{}/auth", self.url))
+            .header(AUTHORIZATION, format!("Basic {}", credentials))
+            .send()
+            .await
+            .map_err(|e| e.to_string())?;
+
+        if !response.status().is_success() {
+            return Err(format!("Authentication failed: {}", response.status()));
         }
-        get_token(&self.url, &self.access, &self.secret).await
+
+        let token = Arc::new(response.json::<String>().await.map_err(|e| e.to_string())?);
+        *cached = Some(token.clone());
+
+        Ok(token)
     }
 
     async fn request_with_retry<F, Fut>(&self, make_request: F) -> Result<Response, String>
@@ -86,18 +102,17 @@ impl AuthClient {
         F: Fn(Client, HeaderMap) -> Fut,
         Fut: std::future::Future<Output = Result<Response, reqwest::Error>>,
     {
-        // First attempt with cached or new token
-        let token = self.get_or_refresh_token(false).await?;
-        let headers = create_auth_headers(&token);
-        let response = make_request(self.client.clone(), headers)
+        let token = self.get_or_refresh_token(None).await?;
+        let response = make_request(self.client.clone(), create_auth_headers(&token))
             .await
             .map_err(|e| e.to_string())?;
 
-        // If unauthorized, refresh token and retry once
         if response.status() == StatusCode::UNAUTHORIZED {
-            let new_token = self.get_or_refresh_token(true).await?;
-            let new_headers = create_auth_headers(&new_token);
-            make_request(self.client.clone(), new_headers)
+            drop(response);
+
+            let new_token = self.get_or_refresh_token(Some(&token)).await?;
+
+            make_request(self.client.clone(), create_auth_headers(&new_token))
                 .await
                 .map_err(|e| e.to_string())
         } else {
