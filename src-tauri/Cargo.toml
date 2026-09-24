@@ -29,6 +29,7 @@ base64 = "0.22"
 
 [dev-dependencies]
 pretty_assertions = "1.4"
+tauri = { version = "1.4", features = ["test"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

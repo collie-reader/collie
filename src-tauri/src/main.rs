@@ -29,6 +29,10 @@ pub mod fetchers {
 pub mod error;
 pub mod worker;
 
+#[cfg(test)]
+#[path = "../tests/commands/mod.rs"]
+mod command_tests;
+
 fn main() {
     let _ = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
